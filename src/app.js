@@ -3,6 +3,7 @@
 // Declare app level module which depends on views, and components
 angular.module('clockOS', [
   'ngRoute',
+  'routeStyles',
   'clockOS.home',
   'clockOS.view1',
   'clockOS.view2',
