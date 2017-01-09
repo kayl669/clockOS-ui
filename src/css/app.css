@@ -1,4 +1,6 @@
 /* app css stylesheet */
+
+/* Some Styles Reset */
 * {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Chrome/Safari/Opera */
@@ -12,8 +14,18 @@
   -moz-user-drag: none;
   -o-user-drag: none;
   user-drag: none;
+  cursor: default;
 }
 
+a, button {
+  cursor: pointer;
+}
+
+input, textarea {
+  cursor: text;
+}
+
+/* Main page styles */
 body {
   background-color: #000;
   color: #fff;
