@@ -11,13 +11,15 @@ import { AppRoutingModule } from './app-routing.module';
 import { ClockComponent } from './clock/clock.component';
 import { HomeComponent } from './home/home.component';
 import { MenuComponent } from './menu/menu.component';
+import { StatusBarComponent } from './status-bar/status-bar.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ClockComponent,
     HomeComponent,
-    MenuComponent
+    MenuComponent,
+    StatusBarComponent
   ],
   imports: [
     BrowserModule,

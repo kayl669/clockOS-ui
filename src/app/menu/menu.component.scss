@@ -1,0 +1,12 @@
+md-list {
+    a {
+        text-decoration: none;
+        &:focus {
+            outline: none;
+            md-list-item {
+                background: #009688;
+                color: #fff;
+            }
+        }
+    }
+}

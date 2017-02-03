@@ -9,6 +9,10 @@
 .align-center {
   text-align: center;
 }
+    
+md-toolbar.center-text md-toolbar-row {
+    justify-content: center;
+}
 
 .flex-container {
   display: flex;
