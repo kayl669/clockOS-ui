@@ -42,6 +42,7 @@ body {
   left:0;
   right:0;
   margin: 0;
+  transform: translate3d(0, 0, 0);
 }
 
 p {
@@ -107,7 +108,7 @@ input {
 
 .white-app-background {
   background: #fff;
-  min-height: 100%;
+  min-height: 100vh;
   min-width: 100%;
 }
 
