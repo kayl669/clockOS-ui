@@ -22,3 +22,20 @@
 .flex-container div.full-width {
   width: 100vw;
 }
+
+.hidden-button {
+  background: none;
+  border: none;
+  color: none;
+  position: fixed;
+  top:0;
+  right: -14px;
+  max-width: 1px;
+  opacity: 0;
+  &:focus, &:hover {
+    outline: none;
+    box-shadow: 0;
+    background-color: none;
+    opacity: 0;
+  }
+}

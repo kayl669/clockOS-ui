@@ -38,11 +38,5 @@ export const slideInDownAnimation: AnimationEntryMetadata =
         transform: 'scale(0.95)'
       }),
       animate('0.1s 2s ease-in')
-    ]),
-    transition(':leave', [
-      animate('0.1s ease-out', style({
-        opacity: 0,
-        transform: 'scale(0.95)'
-      }))
     ])
   ]);

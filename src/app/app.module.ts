@@ -10,12 +10,14 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { ClockComponent } from './clock/clock.component';
 import { HomeComponent } from './home/home.component';
+import { MenuComponent } from './menu/menu.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ClockComponent,
-    HomeComponent
+    HomeComponent,
+    MenuComponent
   ],
   imports: [
     BrowserModule,
