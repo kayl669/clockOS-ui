@@ -13,7 +13,7 @@ export class MenuComponent implements OnInit {
 
   @HostBinding('@routeAnimation') routeAnimation = true;
   @HostBinding('style.display')   display = 'block';
-  @HostBinding('style.position')  position = 'relative';
+  @HostBinding('style.position')  position = 'absolute';
 
   constructor() { }
 

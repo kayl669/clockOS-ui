@@ -43,6 +43,7 @@ body {
   right:0;
   margin: 0;
   transform: translate3d(0, 0, 0);
+  overflow: hidden;
 }
 
 p {
@@ -110,10 +111,12 @@ input {
   letter-spacing: 0.010em;
   line-height: 24px; }
 
-.white-app-background {
-  background: #fff;
+.app-background {
   min-height: 100vh;
-  min-width: 100%;
+  min-width: 100vw;
+  &.light {
+    background: #fff;
+  }
 }
 
 app-status-bar {

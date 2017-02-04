@@ -12,7 +12,7 @@ export class HomeComponent implements AfterViewInit {
 
   @HostBinding('@routeAnimation') routeAnimation = true;
   @HostBinding('style.display')   display = 'block';
-  @HostBinding('style.position')  position = 'relative';
+  @HostBinding('style.position')  position = 'absolute';
 
   @ViewChild('mainButton') enterButton: ElementRef;
 

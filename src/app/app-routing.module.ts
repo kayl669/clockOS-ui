@@ -4,10 +4,11 @@ import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
 import { SplashComponent } from './splash/splash.component';
 import { HomeComponent } from './home/home.component';
 import { MenuComponent } from './menu/menu.component';
+import { SettingsComponent } from './settings/settings.component';
 
 const appRoutes: Routes = [
     {
-        path: '',
+        path: 'splash_screen',
         component: SplashComponent
     },
     {
@@ -18,6 +19,11 @@ const appRoutes: Routes = [
     {
         path: 'menu',
         component: MenuComponent,
+        data: { preload: true }
+    },
+    {
+        path: 'settings',
+        component: SettingsComponent,
         data: { preload: true }
     },
     { path: '**',   redirectTo: '/home' },
