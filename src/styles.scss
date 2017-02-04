@@ -111,14 +111,6 @@ input {
   letter-spacing: 0.010em;
   line-height: 24px; }
 
-.app-background {
-  min-height: 100vh;
-  min-width: 100vw;
-  &.light {
-    background: #fff;
-  }
-}
-
 app-status-bar {
   min-height: 30px;
   md-toolbar-row {
