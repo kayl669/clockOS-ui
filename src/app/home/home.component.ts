@@ -1,5 +1,5 @@
 import { Component, AfterViewInit, HostBinding, ViewChild, ElementRef, Renderer } from '@angular/core';
-import {Router} from '@angular/router';
+import { Router } from '@angular/router';
 import { fadeInZoom } from '../animations';
 
 @Component({
@@ -21,11 +21,8 @@ export class HomeComponent implements AfterViewInit {
     private router: Router
     ) { }
 
-  parentRouter;
-
   onEnter() {
     this.router.navigate(['/menu']);
-    console.log("Enter Pressed");
   }
 
   buttonBlur() {

@@ -1,10 +1,15 @@
 import { NgModule }             from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
 
+import { SplashComponent } from './splash/splash.component';
 import { HomeComponent } from './home/home.component';
 import { MenuComponent } from './menu/menu.component';
 
 const appRoutes: Routes = [
+    {
+        path: '',
+        component: SplashComponent
+    },
     {
         path: 'home',
         component: HomeComponent,
@@ -22,7 +27,8 @@ const appRoutes: Routes = [
   imports: [
     RouterModule.forRoot(
       appRoutes,
-      { useHash: true }
+      { useHash: true,
+      preloadingStrategy: PreloadAllModules }
     )
   ],
   exports: [

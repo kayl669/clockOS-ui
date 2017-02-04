@@ -29,6 +29,6 @@ export const rightInAnimation: AnimationEntryMetadata =
         opacity: 0,
         transform: 'scale(0.95)'
       }),
-      animate('0.1s 0.5s ease-in')
+      animate('0.1s 2s ease-in')
     ])
   ]);

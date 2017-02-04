@@ -12,6 +12,8 @@ import { ClockComponent } from './clock/clock.component';
 import { HomeComponent } from './home/home.component';
 import { MenuComponent } from './menu/menu.component';
 import { StatusBarComponent } from './status-bar/status-bar.component';
+import { SettingsComponent } from './settings/settings.component';
+import { SplashComponent } from './splash/splash.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +21,9 @@ import { StatusBarComponent } from './status-bar/status-bar.component';
     ClockComponent,
     HomeComponent,
     MenuComponent,
-    StatusBarComponent
+    StatusBarComponent,
+    SettingsComponent,
+    SplashComponent
   ],
   imports: [
     BrowserModule,
