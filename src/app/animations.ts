@@ -1,7 +1,7 @@
-import { animate, AnimationEntryMetadata, state, style, transition, trigger } from '@angular/core';
+import { animate,  state, style, transition, trigger } from '@angular/animations';
 
 // Component transition animations
-export const rightInAnimation: AnimationEntryMetadata =
+export const rightInAnimation =
   trigger('routeAnimation', [
     state('*',
       style({
@@ -14,7 +14,7 @@ export const rightInAnimation: AnimationEntryMetadata =
         transform: 'translateX(100%)',
         zIndex: 4
       }),
-      animate('0.1s 0.05s ease-in',
+      animate('0.1s ease-in',
               style ({
                 transform: 'translateX(0)',
                 zIndex: 4
@@ -22,16 +22,20 @@ export const rightInAnimation: AnimationEntryMetadata =
     ]),
     transition(':leave', [
       style({
-        zIndex: 0
+        zIndex: 4,
+        opacity: 1,
+        transform: 'scale(1,1)',
       }),
-      animate('3s',
+      animate('0.15s ease-in',
               style ({
-                zIndex: 0
+                transform: ' scale(0.1,0.1)',
+                opacity: 0,
+                zIndex: 4
               }))
     ])
   ]);
 
-  export const fadeInZoom: AnimationEntryMetadata =
+  export const fadeInZoom =
   trigger('routeAnimation', [
     state('*',
       style({
@@ -44,20 +48,20 @@ export const rightInAnimation: AnimationEntryMetadata =
       style({
         opacity: 0,
         transform: 'scale(0.95)',
-        zIndex: 4
+        zIndex: 3
       }),
-      animate('0.1s 2s ease-in',
+      animate('0.1s ease-in',
               style ({
                 opacity: 1,
                 transform: 'scale(1)',
-                zIndex: 4
+                zIndex: 3
               }))
     ]),
     transition(':leave', [
       style({
         zIndex: 0
       }),
-      animate('3s',
+      animate('0s',
               style ({
                 zIndex: 0
               }))
