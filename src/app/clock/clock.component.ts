@@ -11,7 +11,7 @@ export class ClockComponent implements OnInit {
   @Input() format: string;
   @Input() extraClass: string;
 
-  // constructor() { }
+   constructor() { }
 
   clock: Number;
 
@@ -21,6 +21,7 @@ export class ClockComponent implements OnInit {
     setTimeout(() => this.tick(), this.tickInterval); // reset the timer
   }
   ngOnInit() {
+    this.tick();
     setTimeout(() => this.tick(), this.tickInterval);
   }
 
