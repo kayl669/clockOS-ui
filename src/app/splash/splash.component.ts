@@ -1,5 +1,5 @@
-import { Component, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
+import {AfterViewInit, Component} from '@angular/core';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-splash',
@@ -8,7 +8,8 @@ import { Router } from '@angular/router';
 })
 export class SplashComponent implements AfterViewInit {
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) {
+  }
 
   goHome() {
     this.router.navigate(['/home']);

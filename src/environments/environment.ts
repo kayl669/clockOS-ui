@@ -4,5 +4,9 @@
 // The list of which env maps to which file can be found in `angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  api: 'ws://alarmclock:6123/websocket',
+  appId: '16ac9d6bce0fb304213edb1ab09b120c',
+  baseUrl: 'http://',
+  city: 'Combaillaux'
 };

@@ -1,4 +1,4 @@
-import { animate,  state, style, transition, trigger } from '@angular/animations';
+import {animate, state, style, transition, trigger} from '@angular/animations';
 
 // Component transition animations
 export const rightInAnimation =
@@ -15,10 +15,10 @@ export const rightInAnimation =
         zIndex: 4
       }),
       animate('0.1s ease-in',
-              style ({
-                transform: 'translateX(0)',
-                zIndex: 4
-              }))
+        style({
+          transform: 'translateX(0)',
+          zIndex: 4
+        }))
     ]),
     transition(':leave', [
       style({
@@ -27,15 +27,15 @@ export const rightInAnimation =
         transform: 'scale(1,1)',
       }),
       animate('0.15s ease-in',
-              style ({
-                transform: ' scale(0.1,0.1)',
-                opacity: 0,
-                zIndex: 4
-              }))
+        style({
+          transform: ' scale(0.1,0.1)',
+          opacity: 0,
+          zIndex: 4
+        }))
     ])
   ]);
 
-  export const fadeInZoom =
+export const fadeInZoom =
   trigger('routeAnimation', [
     state('*',
       style({
@@ -51,19 +51,19 @@ export const rightInAnimation =
         zIndex: 3
       }),
       animate('0.1s ease-in',
-              style ({
-                opacity: 1,
-                transform: 'scale(1)',
-                zIndex: 3
-              }))
+        style({
+          opacity: 1,
+          transform: 'scale(1)',
+          zIndex: 3
+        }))
     ]),
     transition(':leave', [
       style({
         zIndex: 0
       }),
       animate('0s',
-              style ({
-                zIndex: 0
-              }))
+        style({
+          zIndex: 0
+        }))
     ])
   ]);

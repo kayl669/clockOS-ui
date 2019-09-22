@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 
 @Component({
   selector: 'clock-widget',
@@ -11,15 +11,17 @@ export class ClockComponent implements OnInit {
   @Input() format: string;
   @Input() extraClass: string;
 
-   constructor() { }
+  constructor() {
+  }
 
-  clock: Number;
+  clock: number;
 
   private tickInterval: number = 1000; // ms
   private tick() {
-    this.clock = Date.now() // get the current time
+    this.clock = Date.now(); // get the current time
     setTimeout(() => this.tick(), this.tickInterval); // reset the timer
   }
+
   ngOnInit() {
     this.tick();
     setTimeout(() => this.tick(), this.tickInterval);

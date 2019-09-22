@@ -2,6 +2,10 @@
 @import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
 @import 'scss/fonts';
 @import 'scss/helpers';
+@import '~igniteui-angular/lib/core/styles/themes/index';
+@include igx-core();
+@include igx-theme($default-palette);
+@include igx-dark-theme($default-palette);
 
 /* app css stylesheet */
 
@@ -73,39 +77,39 @@ input {
 /************
  * Headings
  ************/
-.md-display-4 {
+.mat-display-4 {
   font-size: 112px;
   font-weight: 300;
   letter-spacing: -0.010em;
   line-height: 112px; }
 
-.md-display-3 {
+.mat-display-3 {
   font-size: 56px;
   font-weight: 400;
   letter-spacing: -0.005em;
   line-height: 56px; }
 
-.md-display-2 {
+.mat-display-2 {
   font-size: 45px;
   font-weight: 400;
   line-height: 64px; }
 
-.md-display-1 {
+.mat-display-1 {
   font-size: 34px;
   font-weight: 400;
   line-height: 40px; }
 
-.md-headline {
+.mat-headline {
   font-size: 24px;
   font-weight: 400;
   line-height: 32px; }
 
-.md-title {
+.mat-title {
   font-size: 20px;
   font-weight: 500;
   letter-spacing: 0.005em; }
 
-.md-subhead {
+.mat-subhead {
   font-size: 16px;
   font-weight: 400;
   letter-spacing: 0.010em;
@@ -113,10 +117,10 @@ input {
 
 app-status-bar {
   min-height: 30px;
-  md-toolbar-row {
+  mat-toolbar-row {
       height: auto !important;
   }
-  md-toolbar {
+  mat-toolbar {
       min-height: 30px;
   }
 }
@@ -124,11 +128,11 @@ app-status-bar {
 ::-webkit-scrollbar {
     width: 4px;
 }
- 
+
 ::-webkit-scrollbar-track {
     background-color: #efefef;
 }
- 
+
 ::-webkit-scrollbar-thumb {
-    background-color: #afafaf; 
+    background-color: #afafaf;
 }

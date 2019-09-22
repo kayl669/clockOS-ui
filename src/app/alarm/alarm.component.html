@@ -1,0 +1,23 @@
+<section [ngStyle]="{'background-color':selected ==='enableToggle' ? 'purple' : '' }">
+  <mat-slide-toggle [checked]="enable" #enableToggle="matSlideToggle">Activer</mat-slide-toggle>
+</section>
+<section>
+  <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode" [value]="time">
+    <ng-template igxTimePickerTemplate let-openDialog="openDialog" let-value="value" let-displayTime="displayTime">
+      <igx-input-group>
+        <igx-prefix>
+          <label [ngStyle]="{'background-color':selected ==='hours' ? 'purple' : '' }">{{getHours(displayTime)}}</label>:
+          <label [ngStyle]="{'background-color':selected ==='minutes' ? 'purple' : '' }">{{getMinutes(displayTime)}}</label>
+        </igx-prefix>
+        <input #timePickerValue igxInput [value]="displayTime" hidden/>
+        <igx-suffix>
+          <igx-icon>access_alarm</igx-icon>
+        </igx-suffix>
+      </igx-input-group>
+    </ng-template>
+  </igx-time-picker>
+</section>
+<section [ngStyle]="{'background-color':selected ==='stopAfter' ? 'purple' : '' }">
+  <label igxLabel>Arrêt après {{stopAfter}} minutes</label>
+  <igx-slider [minValue]="1" [maxValue]="120" [continuous]=true [(ngModel)]="stopAfter"></igx-slider>
+</section>
