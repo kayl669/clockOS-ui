@@ -1,8 +1,8 @@
 <div class="flex-container dark">
   <div class="full-width">
     <clock-widget [extraClass]="'align-left date'" [size]="'0'" [format]="'fullDate'"></clock-widget>
-    <div mat-title>{{ current.city }}</div>
-    <div mat-title>{{ current.description }} <img [src]="current.image" class="image"/> {{ current.temperature | number: '1.0-0' }} °C</div>
+    <div>{{ current.city }}</div>
+    <div>{{ current.description }} <i class="wi" [ngClass]="current.image"></i> {{ current.temperature | number: '1.0-0' }} °C</div>
     <br/>
     <clock-widget [extraClass]="'hour align-center'" [size]="'3'" [format]="'HH:mm'"></clock-widget>
   </div>

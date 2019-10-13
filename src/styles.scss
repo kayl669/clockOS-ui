@@ -1,8 +1,8 @@
 /* Global styles */
-@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
 @import 'scss/fonts';
 @import 'scss/helpers';
 @import '~igniteui-angular/lib/core/styles/themes/index';
+@import '~weather-icons/css/weather-icons.min.css';
 @include igx-core();
 @include igx-theme($default-palette);
 @include igx-dark-theme($default-palette);
