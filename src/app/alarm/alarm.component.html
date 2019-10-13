@@ -1,8 +1,8 @@
 <section [ngStyle]="{'background-color':selected ==='enableToggle' ? 'purple' : '' }">
-  <mat-slide-toggle [checked]="enable" #enableToggle="matSlideToggle">Activer</mat-slide-toggle>
+  <igx-switch [checked]="activate">Activer</igx-switch>
 </section>
 <section>
-  <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode" [value]="time">
+  <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode">
     <ng-template igxTimePickerTemplate let-openDialog="openDialog" let-value="value" let-displayTime="displayTime">
       <igx-input-group>
         <igx-prefix>
@@ -17,7 +17,18 @@
     </ng-template>
   </igx-time-picker>
 </section>
-<section [ngStyle]="{'background-color':selected ==='stopAfter' ? 'purple' : '' }">
-  <label igxLabel>Arrêt après {{stopAfter}} minutes</label>
-  <igx-slider [minValue]="1" [maxValue]="120" [continuous]=true [(ngModel)]="stopAfter"></igx-slider>
+<section [ngStyle]="{'background-color':selected ==='volume' ? 'purple' : '' }">
+  <igx-input-group>
+    <label igxLabel for="percentInput">Volume {{volume}}</label>
+    <input igxInput id="percentInput" type="text" [value]="volume"/>
+  </igx-input-group>
+  <igx-slider id="volume" [minValue]="10" [maxValue]="100" [step]="10" [continuous]=true [(ngModel)]="volume"></igx-slider>
+</section>
+<section [ngStyle]="{'background-color':selected ==='volumeIncreaseDuration' ? 'purple' : '' }">
+  <label igxLabel>Augmenter le volume pendant {{volumeIncreaseDuration}} minutes</label>
+  <igx-slider [minValue]="1" [maxValue]="120" [continuous]=true [(ngModel)]="volumeIncreaseDuration"></igx-slider>
+</section>
+<section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? 'purple' : '' }">
+  <label igxLabel>Arrêt après {{snoozeAfter}} minutes</label>
+  <igx-slider [minValue]="1" [maxValue]="120" [step]="5" [continuous]=true [(ngModel)]="snoozeAfter"></igx-slider>
 </section>

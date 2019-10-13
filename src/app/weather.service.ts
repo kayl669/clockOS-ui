@@ -12,23 +12,26 @@ interface ICurrentWeatherData {
       description: string
       icon: string
     }
-  ]
+  ];
   main: {
     temp: number
-  }
+  };
   sys: {
     country: string
-  }
-  dt: number
-  name: string
+  };
+  dt: number;
+  name: string;
 }
 
 export interface IWeatherService {
-  getCurrentWeather(city: string, country: string): Observable<ICurrentWeather>
+  getCurrentWeather(city: string, country: string): Observable<ICurrentWeather>;
 }
 
 @Injectable()
 export class WeatherService implements IWeatherService {
+
+  constructor(private httpClient: HttpClient) {
+  }
   currentWeather = new BehaviorSubject<ICurrentWeather>({
     city: '--',
     country: '--',
@@ -38,7 +41,15 @@ export class WeatherService implements IWeatherService {
     description: '',
   });
 
-  constructor(private httpClient: HttpClient) {
+  private static transformToICurrentWeather(data: ICurrentWeatherData): ICurrentWeather {
+    return {
+      city: data.name,
+      country: data.sys.country,
+      date: data.dt * 1000,
+      image: `http://openweathermap.org/img/w/${data.weather[0].icon}.png`,
+      temperature: data.main.temp,
+      description: data.weather[0].description,
+    };
   }
 
   updateCurrentWeather(search: string | number, country?: string) {
@@ -68,20 +79,9 @@ export class WeatherService implements IWeatherService {
   private getCurrentWeatherHelper(uriParams: string): Observable<ICurrentWeather> {
     return this.httpClient
       .get<ICurrentWeatherData>(
-        `${environment.baseUrl}api.openweathermap.org/data/2.5/weather?` +
+        `http://api.openweathermap.org/data/2.5/weather?` +
         `${uriParams}&appid=${environment.appId}&lang=fr&units=metric`
       )
-      .pipe(map(data => this.transformToICurrentWeather(data)));
-  }
-
-  private transformToICurrentWeather(data: ICurrentWeatherData): ICurrentWeather {
-    return {
-      city: data.name,
-      country: data.sys.country,
-      date: data.dt * 1000,
-      image: `${environment.baseUrl}openweathermap.org/img/w/${data.weather[0].icon}.png`,
-      temperature: data.main.temp,
-      description: data.weather[0].description,
-    };
+      .pipe(map(data => WeatherService.transformToICurrentWeather(data)));
   }
 }

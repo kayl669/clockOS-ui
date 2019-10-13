@@ -5,6 +5,7 @@ import {environment} from '../../environments/environment';
 import {WebsocketService} from '../web-socket.service';
 import {WeatherService} from '../weather.service';
 import {ICurrentWeather} from '../interfaces';
+import {AlarmService} from '../alarm.service';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     private renderer: Renderer2,
     private router: Router,
     private webSocket: WebsocketService,
+    private alarmService: AlarmService,
     private weatherService: WeatherService) {
   }
 
@@ -32,18 +34,33 @@ export class HomeComponent implements OnInit, AfterViewInit {
   handleKeyboardEvent(event: KeyboardEvent) {
     console.log(event.keyCode);
     switch (event.keyCode) {
-      case 39:
-        // Right key
-        this.router.navigate(['/menu']);
-        break;
       case 37:
         // Left key
+        this.navigateLeft();
+        break;
+      case 39:
+        // Right key
+        this.navigateRight();
         break;
       case 38:
         // Up key
+        this.navigateUp();
         break;
       case 40:
         // Down key
+        this.navigateDown();
+        break;
+      case 17:
+        // Right ctrl key
+        this.navigateStop();
+        break;
+      case 16:
+        // Right shift key
+        this.navigateSnooze();
+        break;
+      case 13:
+        // Return key
+        this.navigateOK();
         break;
       default:
       // any other key was pressed
@@ -60,28 +77,53 @@ export class HomeComponent implements OnInit, AfterViewInit {
       console.log('Response from websocket: ' + msg.data);
       switch (msg.data) {
         case 'RIGHT':  // Right button pressed
-          console.log('RIGHT');
-          this.router.navigate(['/menu']);
+          this.navigateRight();
           break;
         case 'DOWN':  // Down button pressed
-          console.log('DOWN');
+          this.navigateDown();
           break;
         case 'UP':  // Up button pressed
-          console.log('UP');
+          this.navigateUp();
           break;
         case 'SNOOZE':  // Snooze button pressed
-          console.log('SNOOZE');
+          this.navigateSnooze();
           break;
         case 'STOP':  // Stop button pressed
-          console.log('STOP');
+          this.navigateStop();
           break;
         case 'LEFT':  // Left button pressed
-          console.log('LEFT');
+          this.navigateLeft();
           break;
         case 'OK':  // OK button pressed
-          console.log('OK');
+          this.navigateOK();
           break;
       }
     });
+  }
+
+  private navigateLeft() {
+  }
+
+  private navigateRight() {
+    this.router.navigate(['/menu']);
+  }
+
+  private navigateUp() {
+  }
+
+  private navigateDown() {
+  }
+
+  private navigateOK() {
+  }
+
+  private navigateStop() {
+    console.log('STOP');
+    this.alarmService.stopAlarm();
+  }
+
+  private navigateSnooze() {
+    console.log('SNOOZE');
+    this.alarmService.snoozeAlarm();
   }
 }

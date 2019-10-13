@@ -1,9 +1,10 @@
 import {AfterViewInit, Component, HostListener, ViewChild} from '@angular/core';
-import {MatSlideToggle} from '@angular/material';
-import {IgxInputDirective, IgxSliderComponent, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
+import {IgxInputDirective, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
 import {Router} from '@angular/router';
 import {environment} from '../../environments/environment';
 import {WebsocketService} from '../web-socket.service';
+import {AlarmService} from '../alarm.service';
+import {IAlarm} from '../interfaces';
 
 @Component({
   selector: 'app-alarm',
@@ -12,21 +13,35 @@ import {WebsocketService} from '../web-socket.service';
 })
 export class AlarmComponent implements AfterViewInit {
   public mode: InteractionMode = InteractionMode.DropDown;
-  enable = false;
-  time = new Date(0);
-  stopAfter = 1;
+  activate;
+  volume;
+  volumeIncreaseDuration;
+  snoozeAfter;
   selected = 'enableToggle';
+  alarm: IAlarm;
 
-  @ViewChild('enableToggle', {static: true}) enableToggle: MatSlideToggle;
   @ViewChild('timePicker', {static: true}) timePicker: IgxTimePickerComponent;
   @ViewChild('timePickerValue', {static: false}) timePickerValue: IgxInputDirective;
-  @ViewChild('stopAfter', {static: false}) stopAfterValue: IgxSliderComponent;
 
-
-  constructor(public router: Router, private webSocket: WebsocketService) {
+  constructor(public router: Router, private webSocket: WebsocketService, private alarmService: AlarmService) {
   }
 
   ngAfterViewInit() {
+    this.alarmService.getAlarm().subscribe(
+      result => {
+        this.alarm = result;
+        this.activate = this.alarm.activate;
+        const d = new Date();
+        this.timePicker.value = new Date(d.getFullYear(), d.getMonth(), d.getDay(), this.alarm.hour, this.alarm.minute, 0, 0);
+        this.volume = this.alarm.volume;
+        this.volumeIncreaseDuration = this.alarm.volumeIncreaseDuration;
+        this.snoozeAfter = this.alarm.snoozeAfter;
+        this.timePicker.nextHour();
+
+        return this.alarm;
+      },
+      error => console.log('Oups', error));
+
     this.webSocket.connect(environment.api).subscribe((msg) => {
       console.log('Response from websocket: ' + msg.data);
       switch (msg.data) {
@@ -49,7 +64,7 @@ export class AlarmComponent implements AfterViewInit {
           console.log('SNOOZE');
           break;
         case 'STOP':  // Stop button pressed
-          console.log('STOP');
+          this.navigateStop();
           break;
       }
     });
@@ -57,7 +72,6 @@ export class AlarmComponent implements AfterViewInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    console.log(event.keyCode);
     switch (event.keyCode) {
       case 37:
         // Left key
@@ -75,6 +89,10 @@ export class AlarmComponent implements AfterViewInit {
         // Down key
         this.navigateDown();
         break;
+      case 17:
+        // Right ctrl key
+        this.navigateStop();
+        break;
       case 13:
         // Return key
         this.navigateOK();
@@ -84,9 +102,16 @@ export class AlarmComponent implements AfterViewInit {
     }
   }
 
-  private navigateLeft() {
+  private navigateUp() {
     switch (this.selected) {
-      case 'stopAfter':
+      case 'snoozeAfter':
+        this.selected = 'volumeIncreaseDuration';
+        break;
+      case 'volumeIncreaseDuration':
+        this.timePickerValue.nativeElement.focus();
+        this.selected = 'volume';
+        break;
+      case 'volume':
         this.timePickerValue.nativeElement.focus();
         this.selected = 'minutes';
         break;
@@ -95,11 +120,36 @@ export class AlarmComponent implements AfterViewInit {
         this.selected = 'hours';
         break;
       case 'hours':
-        this.enableToggle.focus();
         this.selected = 'enableToggle';
         break;
       case 'enableToggle':
-        this.selected = 'stopAfter';
+        this.selected = 'snoozeAfter';
+        break;
+    }
+    console.log(this.selected);
+  }
+
+  private navigateDown() {
+    switch (this.selected) {
+      case 'enableToggle':
+        this.timePickerValue.nativeElement.focus();
+        this.selected = 'hours';
+        break;
+      case 'hours':
+        this.timePickerValue.nativeElement.focus();
+        this.selected = 'minutes';
+        break;
+      case 'minutes':
+        this.selected = 'volume';
+        break;
+      case 'volume':
+        this.selected = 'volumeIncreaseDuration';
+        break;
+      case 'volumeIncreaseDuration':
+        this.selected = 'snoozeAfter';
+        break;
+      case 'snoozeAfter':
+        this.selected = 'enableToggle';
         break;
     }
     console.log(this.selected);
@@ -108,63 +158,65 @@ export class AlarmComponent implements AfterViewInit {
   private navigateRight() {
     switch (this.selected) {
       case 'enableToggle':
-        this.timePickerValue.nativeElement.focus();
-        this.selected = 'hours';
+        this.activate = !this.activate;
         break;
       case 'hours':
-        this.timePickerValue.nativeElement.focus();
-        this.selected = 'minutes';
-        break;
-      case 'minutes':
-        this.selected = 'stopAfter';
-        break;
-      case 'stopAfter':
-        this.enableToggle.focus();
-        this.selected = 'enableToggle';
-        break;
-    }
-    console.log(this.selected);
-  }
-
-  private navigateUp() {
-    switch (this.selected) {
-      case 'enableToggle':
-        this.enableToggle.toggle();
-        break;
-      case 'hours':
-        this.timePicker.nextHour();
+        this.timePicker.scrollHourIntoView('' + (this.timePicker.value.getHours() + 1));
         this.timePicker.okButtonClick();
         break;
       case 'minutes':
-        this.timePicker.nextMinute();
+        this.timePicker.scrollMinuteIntoView('' + (this.timePicker.value.getMinutes() + 1));
         this.timePicker.okButtonClick();
         break;
-      case 'stopAfter':
-        this.stopAfter++;
+      case 'volume':
+        this.volume = this.volume + 10;
+        break;
+      case 'volumeIncreaseDuration':
+        this.volumeIncreaseDuration++;
+        break;
+      case 'snoozeAfter':
+        this.snoozeAfter = this.snoozeAfter + 5;
         break;
     }
   }
 
-  private navigateDown() {
+  private navigateLeft() {
     switch (this.selected) {
       case 'enableToggle':
-        this.enableToggle.toggle();
+        this.activate = !this.activate;
         break;
       case 'hours':
-        this.timePicker.prevHour();
+        this.timePicker.scrollHourIntoView('' + (this.timePicker.value.getHours() - 1));
         this.timePicker.okButtonClick();
         break;
       case 'minutes':
-        this.timePicker.prevMinute();
+        this.timePicker.scrollMinuteIntoView('' + (this.timePicker.value.getMinutes() - 1));
         this.timePicker.okButtonClick();
         break;
-      case 'stopAfter':
-        this.stopAfter--;
+      case 'volume':
+        this.volume = this.volume - 10;
+        break;
+      case 'volumeIncreaseDuration':
+        this.volumeIncreaseDuration--;
+        break;
+      case 'snoozeAfter':
+        this.snoozeAfter = this.snoozeAfter - 5;
         break;
     }
   }
 
   private navigateOK() {
+    this.alarm.activate = this.activate;
+    this.alarm.hour = this.timePicker.value.getHours();
+    this.alarm.minute = this.timePicker.value.getMinutes();
+    this.alarm.volume = this.volume;
+    this.alarm.volumeIncreaseDuration = this.volumeIncreaseDuration;
+    this.alarm.snoozeAfter = this.snoozeAfter;
+    this.alarmService.setAlarm(this.alarm);
+    this.router.navigate(['/']);
+  }
+
+  private navigateStop() {
     this.router.navigate(['/']);
   }
 

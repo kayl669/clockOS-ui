@@ -22,6 +22,7 @@ import {
   IgxInputGroupModule,
   IgxLayoutModule,
   IgxListModule,
+  IgxNavbarModule,
   IgxNavigationDrawerModule,
   IgxRadioModule,
   IgxRippleModule,
@@ -30,11 +31,9 @@ import {
   IgxTimePickerModule,
   IgxToggleModule
 } from 'igniteui-angular';
-import {MatIconModule, MatInputModule, MatListModule, MatToolbarModule} from '@angular/material';
 import {WeatherService} from './weather.service';
 import {HttpClientModule} from '@angular/common/http';
 import {AlarmComponent} from './alarm/alarm.component';
-import {MatSlideToggleModule} from '@angular/material/typings/slide-toggle';
 
 @NgModule({
   declarations: [
@@ -61,15 +60,11 @@ import {MatSlideToggleModule} from '@angular/material/typings/slide-toggle';
     IgxRippleModule,
     IgxSwitchModule,
     IgxToggleModule,
-    MatToolbarModule,
-    MatListModule,
-    MatIconModule,
-    MatInputModule,
-    MatSlideToggleModule,
     IgxTimePickerModule,
     IgxInputGroupModule,
     IgxListModule,
-    IgxSliderModule
+    IgxSliderModule,
+    IgxNavbarModule
   ],
   providers: [WebsocketService, WeatherService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
   bootstrap: [AppComponent]
