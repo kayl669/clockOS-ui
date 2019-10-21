@@ -15,3 +15,7 @@ export interface IAlarm {
   volumeIncreaseDuration: number;
   snoozeAfter: number;
 }
+
+export interface ICity {
+  city: string;
+}

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, HostListener} from '@angular/core';
 import {Router} from '@angular/router';
 import {WebsocketService} from '../web-socket.service';
 import {environment} from '../../environments/environment';
@@ -43,6 +43,38 @@ export class SettingsComponent implements AfterViewInit {
       }
     });
   }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    switch (event.keyCode) {
+      case 37:
+        // Left key
+        this.navigateLeft();
+        break;
+      case 39:
+        // Right key
+        this.navigateRight();
+        break;
+      case 38:
+        // Up key
+        this.navigateUp();
+        break;
+      case 40:
+        // Down key
+        this.navigateDown();
+        break;
+      case 17:
+        // Right ctrl key
+        break;
+      case 13:
+        // Return key
+        this.navigateOK();
+        break;
+      default:
+      // any other key was pressed
+    }
+  }
+
 
   private navigateLeft() {
 

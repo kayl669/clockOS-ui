@@ -69,7 +69,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.weatherService.currentWeather.subscribe(data => (this.current = data));
-    this.weatherService.updateCurrentWeather(environment.city);
+    setInterval(() => {
+      this.weatherService.getCity().subscribe(data => {
+        return (this.weatherService.updateCurrentWeather(data.city));
+      });
+    }, 60000);
   }
 
   ngAfterViewInit() {

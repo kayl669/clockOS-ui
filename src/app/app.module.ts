@@ -34,6 +34,7 @@ import {
 import {WeatherService} from './weather.service';
 import {HttpClientModule} from '@angular/common/http';
 import {AlarmComponent} from './alarm/alarm.component';
+import {WeatherComponent} from './weather/weather.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import {AlarmComponent} from './alarm/alarm.component';
     StatusBarComponent,
     SettingsComponent,
     SplashComponent,
-    AlarmComponent
+    AlarmComponent,
+    WeatherComponent
   ],
   imports: [
     BrowserModule,

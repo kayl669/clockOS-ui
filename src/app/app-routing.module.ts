@@ -6,6 +6,7 @@ import {HomeComponent} from './home/home.component';
 import {MenuComponent} from './menu/menu.component';
 import {SettingsComponent} from './settings/settings.component';
 import {AlarmComponent} from './alarm/alarm.component';
+import {WeatherComponent} from './weather/weather.component';
 
 const appRoutes: Routes = [
   {
@@ -25,6 +26,11 @@ const appRoutes: Routes = [
   {
     path: 'menu',
     component: MenuComponent,
+    data: {preload: true}
+  },
+  {
+    path: 'weather',
+    component: WeatherComponent,
     data: {preload: true}
   },
   {

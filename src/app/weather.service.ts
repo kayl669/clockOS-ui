@@ -1,10 +1,10 @@
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {environment} from '../environments/environment';
-import {ICurrentWeather} from './interfaces';
+import {ICity, ICurrentWeather} from './interfaces';
 
 interface ICurrentWeatherData {
   weather: [
@@ -76,11 +76,13 @@ const iconMapping = {
   804: 'wi-day-cloudy'
 };
 
+// @ts-ignore
 @Injectable()
 export class WeatherService implements IWeatherService {
 
   constructor(private httpClient: HttpClient) {
   }
+
   currentWeather = new BehaviorSubject<ICurrentWeather>({
     city: '--',
     country: '--',
@@ -105,6 +107,22 @@ export class WeatherService implements IWeatherService {
     this.getCurrentWeather(search, country).subscribe(weather =>
       this.currentWeather.next(weather)
     );
+  }
+
+  public getCity(): Observable<ICity> {
+    return this.httpClient.get<ICity>(environment.backUrl + '/city');
+  }
+
+  public setCity(city: string) {
+    console.log('city ' + city);
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json');
+    // tslint:disable-next-line:new-parens
+    const data: ICity = new class implements ICity {
+      city: string;
+    };
+    data.city = city;
+    this.httpClient.post<ICity>(`${environment.backUrl}/city`, data, {headers}).subscribe(res => console.log(res));
   }
 
   getCurrentWeather(

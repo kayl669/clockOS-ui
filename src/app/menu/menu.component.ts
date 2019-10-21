@@ -31,7 +31,7 @@ export class MenuComponent implements AfterViewInit {
       routerLink: '',
     },
   ];
-  public selected = 2;
+  public selected = 1;
 
   constructor(public router: Router,
               private webSocket: WebsocketService) {
@@ -68,7 +68,6 @@ export class MenuComponent implements AfterViewInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    console.log(event.keyCode);
     switch (event.keyCode) {
       case 37:
         // Left key
