@@ -19,3 +19,10 @@ export interface IAlarm {
 export interface ICity {
   city: string;
 }
+
+export interface IConfig {
+  api: string;
+  openWeatherAppId: string;
+  deezerAppId: string;
+  server: string;
+}

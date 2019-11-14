@@ -1,0 +1,85 @@
+@import "https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,900|Dosis:300,400,600,700,800|Droid+Sans:400,700|Lato:300,400,700,900|PT+Sans:400,700|Ubuntu:300,400,500,700|Open+Sans:400,300,600,700|Roboto:400,300,500,700,900|Roboto+Condensed:400,300,700|Open+Sans+Condensed:300,700|Play:400,700|Maven+Pro:400,500,700,900&subset=latin,latin-ext";
+
+svg {
+  position: absolute;
+  width: 720px;
+  height: 480px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.overlay {
+  position: absolute;
+  width: 720px;
+  height: 480px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.display-icon {
+  position: absolute;
+  top: 240px;
+  left: 250px;
+  font-size: 3rem;
+  font-weight: 400;
+  fill: White;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.display-deezer {
+  position: absolute;
+  left: 30px;
+  top: 320px;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.bgDot {
+  stroke: none;
+  fill: #215769;
+}
+
+.clockCircle {
+  fill: none;
+  stroke: #2a2a2a;
+}
+
+.clockArc {
+  fill: none;
+  stroke: #1bbccb;
+}
+
+.clockDot {
+  fill: #e9fafc;
+}
+
+.caption {
+  font-family: "Source Sans Pro";
+  font-weight: 300;
+  fill: White;
+}
+
+.dayText {
+  font-size: 1.7rem;
+}
+
+.dateText {
+  font-size: 2.5rem;
+  font-weight: 400;
+}
+
+.timeText {
+  font-family: "Open Sans";
+  font-size: 5rem;
+  font-weight: 600;
+  fill: White;
+}

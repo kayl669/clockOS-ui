@@ -5,8 +5,4 @@
 
 export const environment = {
   production: false,
-  api: 'ws://alarmclock:6123/websocket',
-  appId: '16ac9d6bce0fb304213edb1ab09b120c',
-  backUrl: 'http://alarmClock:3000',
-  city: 'Combaillaux'
 };

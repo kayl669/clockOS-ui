@@ -1,0 +1,38 @@
+{
+    "/config": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
+    "/remote": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
+    "/city": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
+    "/alarm": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
+    "/stopAlarm": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
+    "/snoozeAlarm": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    }
+}
