@@ -6,6 +6,9 @@
         <button igxButton="icon" (click)="this.socket.emit('pause')">
             <igx-icon>pause</igx-icon>
         </button>
+        <button igxButton="icon" (click)="this.socket.emit('stop')">
+            <igx-icon>stop</igx-icon>
+        </button>
         <button igxButton="icon" (click)="this.socket.emit('volume', '-10')">
             <igx-icon>volume_down</igx-icon>
         </button>

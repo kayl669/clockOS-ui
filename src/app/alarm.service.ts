@@ -16,7 +16,12 @@ export class AlarmService {
     }
 
     public setAlarm(alarm: IAlarm) {
-        console.log('alarm ' + alarm);
+        console.log('activate ' + alarm.activate);
+        console.log('hour ' + alarm.hour);
+        console.log('minute ' + alarm.minute);
+        console.log('snoozeAfter ' + alarm.snoozeAfter);
+        console.log('volume ' + alarm.volume);
+        console.log('volumeIncreaseDuration ' + alarm.volumeIncreaseDuration);
         const headers = new HttpHeaders()
             .set('Content-Type', 'application/json');
         this.httpClient.post<IAlarm>(`/alarm`, alarm, {headers}).subscribe(res => console.log(res));

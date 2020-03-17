@@ -1,9 +1,8 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
-import {IgxInputDirective, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
+import {IgxInputDirective, IgxSwitchComponent, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
 import {Router} from '@angular/router';
 import {WebsocketService} from '../web-socket.service';
 import {AlarmService} from '../alarm.service';
-import {IAlarm} from '../interfaces';
 import {HttpClient} from "@angular/common/http";
 
 @Component({
@@ -13,13 +12,11 @@ import {HttpClient} from "@angular/common/http";
 })
 export class AlarmComponent implements AfterViewInit, OnInit {
     public mode: InteractionMode = InteractionMode.DropDown;
-    activate;
     volume;
     volumeIncreaseDuration;
     snoozeAfter;
     selected = 'enableToggle';
-    alarm: IAlarm;
-
+    @ViewChild('activate', {static: true}) activate: IgxSwitchComponent;
     @ViewChild('timePicker', {static: true}) timePicker: IgxTimePickerComponent;
     @ViewChild('timePickerValue', {static: false}) timePickerValue: IgxInputDirective;
 
@@ -32,16 +29,12 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     ngAfterViewInit() {
         this.alarmService.getAlarm().subscribe(
             result => {
-                this.alarm = result;
-                this.activate = this.alarm.activate;
+                this.activate.checked = result.activate;
                 const d = new Date();
-                this.timePicker.value = new Date(d.getFullYear(), d.getMonth(), d.getDay(), this.alarm.hour, this.alarm.minute, 0, 0);
-                this.volume = this.alarm.volume;
-                this.volumeIncreaseDuration = this.alarm.volumeIncreaseDuration;
-                this.snoozeAfter = this.alarm.snoozeAfter;
-                this.timePicker.nextHour();
-
-                return this.alarm;
+                this.timePicker.value = new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0);
+                this.volume = result.volume;
+                this.volumeIncreaseDuration = result.volumeIncreaseDuration;
+                this.snoozeAfter = result.snoozeAfter;
             },
             error => console.log('Oups', error));
 
@@ -161,7 +154,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     private navigateRight() {
         switch (this.selected) {
             case 'enableToggle':
-                this.activate = !this.activate;
+                this.activate.checked = !this.activate.checked;
                 break;
             case 'hours':
                 this.timePicker.scrollHourIntoView('' + (this.timePicker.value.getHours() + 1));
@@ -186,7 +179,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     private navigateLeft() {
         switch (this.selected) {
             case 'enableToggle':
-                this.activate = !this.activate;
+                this.activate.checked = !this.activate.checked;
                 break;
             case 'hours':
                 this.timePicker.scrollHourIntoView('' + (this.timePicker.value.getHours() - 1));
@@ -209,13 +202,14 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     }
 
     private navigateOK() {
-        this.alarm.activate = this.activate;
-        this.alarm.hour = this.timePicker.value.getHours();
-        this.alarm.minute = this.timePicker.value.getMinutes();
-        this.alarm.volume = this.volume;
-        this.alarm.volumeIncreaseDuration = this.volumeIncreaseDuration;
-        this.alarm.snoozeAfter = this.snoozeAfter;
-        this.alarmService.setAlarm(this.alarm);
+        this.alarmService.setAlarm({
+            activate: this.activate.checked,
+            hour: this.timePicker.value.getHours(),
+            minute: this.timePicker.value.getMinutes(),
+            volume: this.volume,
+            volumeIncreaseDuration: this.volumeIncreaseDuration,
+            snoozeAfter: this.snoozeAfter
+        });
         this.router.navigate(['/']);
     }
 

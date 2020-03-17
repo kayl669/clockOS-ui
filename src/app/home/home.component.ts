@@ -20,6 +20,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     current: ICurrentWeather;
     private tickInterval: number = 1000; // ms
+    enableAlarm: boolean = false;
+    timeAlarm: string = "";
 
     constructor(
         private renderer: Renderer2,
@@ -79,6 +81,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
             });
         }, 60000);
         this.tick();
+        this.alarmService.getAlarm().subscribe(result => {
+            this.enableAlarm = result.activate;
+            const d = new Date();
+            this.timeAlarm = moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
+        })
     }
 
     ngAfterViewInit() {

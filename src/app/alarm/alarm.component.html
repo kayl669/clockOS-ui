@@ -1,5 +1,5 @@
 <section [ngStyle]="{'background-color':selected ==='enableToggle' ? 'purple' : '' }">
-  <igx-switch [checked]="activate">Activer</igx-switch>
+  <igx-switch #activate>Activer</igx-switch>
 </section>
 <section>
   <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode">

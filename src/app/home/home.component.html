@@ -61,6 +61,10 @@
             <div class="display-deezer">
                 <app-deezer></app-deezer>
             </div>
+            <div class="display-alarm" *ngIf="enableAlarm">
+                <igx-icon class="alarm-size">access_alarm</igx-icon>
+                <label>{{timeAlarm}}</label>
+            </div>
         </div>
     </div>
 </div>

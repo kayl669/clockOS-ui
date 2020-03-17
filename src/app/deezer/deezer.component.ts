@@ -168,10 +168,17 @@ export class DeezerComponent implements AfterViewInit, OnInit {
             }
         });
         // Pause
-        this.socket.on('pause', (track) => {
-            console.log('pause', track);
+        this.socket.on('pause', () => {
+            console.log('pause');
             DZ.player.pause();
             this.socket.emit('musicStatus', 'pause');
+        });
+        // Stop
+        this.socket.on('stop', () => {
+            console.log('stop');
+            DZ.player.pause();
+            this.musicStatus = 'stop';
+            this.socket.emit('musicStatus', 'stop');
         });
 
         // Prev
