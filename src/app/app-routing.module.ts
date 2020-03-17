@@ -1,7 +1,5 @@
 import {NgModule} from '@angular/core';
 import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
-
-import {SplashComponent} from './splash/splash.component';
 import {HomeComponent} from './home/home.component';
 import {MenuComponent} from './menu/menu.component';
 import {SettingsComponent} from './settings/settings.component';
@@ -9,10 +7,6 @@ import {AlarmComponent} from './alarm/alarm.component';
 import {WeatherComponent} from './weather/weather.component';
 
 const appRoutes: Routes = [
-  {
-    path: 'splash_screen',
-    component: SplashComponent
-  },
   {
     path: 'home',
     component: HomeComponent,
@@ -44,11 +38,11 @@ const appRoutes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(
-      appRoutes,
-      {
-        useHash: true,
-        preloadingStrategy: PreloadAllModules
-      }
+        appRoutes,
+        {
+          useHash: true,
+          preloadingStrategy: PreloadAllModules
+        }
     )
   ],
   exports: [

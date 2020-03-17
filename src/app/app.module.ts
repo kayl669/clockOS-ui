@@ -13,7 +13,6 @@ import {HomeComponent} from './home/home.component';
 import {MenuComponent} from './menu/menu.component';
 import {StatusBarComponent} from './status-bar/status-bar.component';
 import {SettingsComponent} from './settings/settings.component';
-import {SplashComponent} from './splash/splash.component';
 import {registerLocaleData} from '@angular/common';
 import {WebsocketService} from './web-socket.service';
 import {
@@ -47,7 +46,6 @@ import {ScriptLoaderModule} from 'ngx-script-loader';
         MenuComponent,
         StatusBarComponent,
         SettingsComponent,
-        SplashComponent,
         AlarmComponent,
         WeatherComponent,
         DeezerComponent
