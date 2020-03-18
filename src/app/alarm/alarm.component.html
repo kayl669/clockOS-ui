@@ -1,34 +1,40 @@
-<section [ngStyle]="{'background-color':selected ==='enableToggle' ? 'purple' : '' }">
-  <igx-switch #activate>Activer</igx-switch>
-</section>
-<section>
-  <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode">
-    <ng-template igxTimePickerTemplate let-openDialog="openDialog" let-value="value" let-displayTime="displayTime">
-      <igx-input-group>
-        <igx-prefix>
-          <label [ngStyle]="{'background-color':selected ==='hours' ? 'purple' : '' }">{{getHours(displayTime)}}</label>:
-          <label [ngStyle]="{'background-color':selected ==='minutes' ? 'purple' : '' }">{{getMinutes(displayTime)}}</label>
-        </igx-prefix>
-        <input #timePickerValue igxInput [value]="displayTime" hidden/>
-        <igx-suffix>
-          <igx-icon>access_alarm</igx-icon>
-        </igx-suffix>
-      </igx-input-group>
-    </ng-template>
-  </igx-time-picker>
-</section>
-<section [ngStyle]="{'background-color':selected ==='volume' ? 'purple' : '' }">
-  <igx-input-group>
-    <label igxLabel for="percentInput">Volume {{volume}}</label>
-    <input igxInput id="percentInput" type="text" [value]="volume"/>
-  </igx-input-group>
-  <igx-slider id="volume" [minValue]="10" [maxValue]="100" [step]="10" [continuous]=true [(ngModel)]="volume"></igx-slider>
-</section>
-<section [ngStyle]="{'background-color':selected ==='volumeIncreaseDuration' ? 'purple' : '' }">
-  <label igxLabel>Augmenter le volume pendant {{volumeIncreaseDuration}} minutes</label>
-  <igx-slider [minValue]="1" [maxValue]="120" [continuous]=true [(ngModel)]="volumeIncreaseDuration"></igx-slider>
-</section>
-<section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? 'purple' : '' }">
-  <label igxLabel>Arrêt après {{snoozeAfter}} minutes</label>
-  <igx-slider [minValue]="1" [maxValue]="120" [step]="5" [continuous]=true [(ngModel)]="snoozeAfter"></igx-slider>
-</section>
+<div class="flex-container dark">
+    <div class="full-width">
+        <app-status-bar [name]="'Alarme'"></app-status-bar>
+        <section [ngStyle]="{'background-color':selected ==='enableToggle' ? 'purple' : '' }">
+            <igx-switch #activate>Activer</igx-switch>
+        </section>
+        <section>
+            <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode">
+                <ng-template igxTimePickerTemplate let-openDialog="openDialog" let-value="value" let-displayTime="displayTime">
+                    <igx-input-group>
+                        <igx-prefix>
+                            <label [ngStyle]="{'background-color':selected ==='hours' ? 'purple' : '' }">{{getHours(displayTime)}}</label>:
+                            <label [ngStyle]="{'background-color':selected ==='minutes' ? 'purple' : '' }">{{getMinutes(displayTime)}}</label>
+                        </igx-prefix>
+                        <input #timePickerValue igxInput [value]="displayTime" hidden/>
+                        <igx-suffix>
+                            <igx-icon>access_alarm</igx-icon>
+                        </igx-suffix>
+                    </igx-input-group>
+                </ng-template>
+            </igx-time-picker>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='volume' ? 'purple' : '' }">
+            <igx-input-group>
+                <label igxLabel for="percentInput">Volume {{volume}}</label>
+                <input igxInput id="percentInput" type="text" [value]="volume"/>
+            </igx-input-group>
+            <igx-slider id="volume" [minValue]="10" [maxValue]="100" [step]="10" [continuous]=true [(ngModel)]="volume"></igx-slider>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='volumeIncreaseDuration' ? 'purple' : '' }">
+            <label igxLabel>Augmenter le volume pendant {{volumeIncreaseDuration}} minutes</label>
+            <igx-slider [minValue]="1" [maxValue]="120" [continuous]=true [(ngModel)]="volumeIncreaseDuration"></igx-slider>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? 'purple' : '' }">
+            <label igxLabel>Arrêt après {{snoozeAfter}} minutes</label>
+            <igx-slider [minValue]="1" [maxValue]="120" [step]="5" [continuous]=true [(ngModel)]="snoozeAfter"></igx-slider>
+        </section>
+    </div>
+</div>
+

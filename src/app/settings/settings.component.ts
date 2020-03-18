@@ -8,8 +8,6 @@ import {WebsocketService} from '../web-socket.service';
     styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent implements AfterViewInit {
-    api;
-
     constructor(public router: Router, private webSocket: WebsocketService) {
     }
 

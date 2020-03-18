@@ -25,7 +25,7 @@ export class MenuComponent implements AfterViewInit {
             routerLink: '/alarm',
         },
     ];
-    public selected = 1;
+    public selected = 0;
 
     constructor(public router: Router, private webSocket: WebsocketService) {
     }

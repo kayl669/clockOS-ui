@@ -1,8 +1,13 @@
-<igx-list displayDensity="cosy">
-  <igx-list-item igxRipple igxRippleTarget=".igx-list__item-content" *ngFor="let item of navigationItems" routerLinkActive="active-list-item"
-                 [routerLink]="[item.routerLink]"
-                 [ngStyle]="{'background-color':item.name===navigationItems[selected].name ? 'purple' : '' }" (click)="navigate(item.routerLink)">
+<div class="flex-container dark">
+    <div class="full-width">
+        <app-status-bar [name]="'Menu'"></app-status-bar>
+        <igx-list displayDensity="cosy">
+            <igx-list-item igxRipple igxRippleTarget=".igx-list__item-content" *ngFor="let item of navigationItems" routerLinkActive="active-list-item"
+                           [routerLink]="[item.routerLink]"
+                           [ngStyle]="{'background-color':item.name===navigationItems[selected].name ? 'purple' : '' }" (click)="navigate(item.routerLink)">
         <span igxListLineTitle><igx-icon>{{item.icon}}</igx-icon>
-          {{item.name}}</span>
-  </igx-list-item>
-</igx-list>
+            {{item.name}}</span>
+            </igx-list-item>
+        </igx-list>
+    </div>
+</div>
