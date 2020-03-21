@@ -34,5 +34,11 @@
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
+    },
+    "/wifi*": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
     }
 }

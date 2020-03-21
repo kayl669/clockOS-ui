@@ -4,7 +4,7 @@
         <igx-list displayDensity="cosy">
             <igx-list-item igxRipple igxRippleTarget=".igx-list__item-content" *ngFor="let item of navigationItems" routerLinkActive="active-list-item"
                            [routerLink]="[item.routerLink]"
-                           [ngStyle]="{'background-color':item.name===navigationItems[selected].name ? 'purple' : '' }" (click)="navigate(item.routerLink)">
+                           [ngStyle]="{'background-color':item.name===navigationItems[selected].name ? '#1b70cb' : '' }" (click)="navigate(item.routerLink)">
         <span igxListLineTitle><igx-icon>{{item.icon}}</igx-icon>
             {{item.name}}</span>
             </igx-list-item>

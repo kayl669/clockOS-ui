@@ -10,9 +10,9 @@ import {WebsocketService} from '../web-socket.service';
 export class MenuComponent implements AfterViewInit {
     public navigationItems: { icon: string; name: string; routerLink: string }[] = [
         {
-            name: 'Configuration',
-            icon: 'settings',
-            routerLink: '/settings',
+            name: 'Alarme',
+            icon: 'alarm',
+            routerLink: '/alarm',
         },
         {
             name: 'Météo',
@@ -20,9 +20,9 @@ export class MenuComponent implements AfterViewInit {
             routerLink: '/weather',
         },
         {
-            name: 'Alarme',
-            icon: 'alarm',
-            routerLink: '/alarm',
+            name: 'Configuration Wifi',
+            icon: 'settings',
+            routerLink: '/settings',
         },
     ];
     public selected = 0;

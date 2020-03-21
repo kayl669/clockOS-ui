@@ -9,10 +9,6 @@
 .align-center {
   text-align: center;
 }
-    
-md-toolbar.center-text md-toolbar-row {
-    justify-content: center;
-}
 
 .flex-container {
   display: flex;
@@ -27,7 +23,14 @@ md-toolbar.center-text md-toolbar-row {
 }
 
 .flex-container div.full-width {
-  width: 100vw;
+  position: absolute;
+  width: 720px;
+  height: 480px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
 }
 
 .app-background {
@@ -41,7 +44,7 @@ md-toolbar.center-text md-toolbar-row {
   overflow: auto;
   max-height: 100vh;
   &.status-bar {
-    max-height: calc(100vh - 30px);
+    max-height: calc(100vh - 20px);
   }
 }
 
@@ -54,10 +57,43 @@ md-toolbar.center-text md-toolbar-row {
   right: -14px;
   max-width: 1px;
   opacity: 0;
+
   &:focus, &:hover {
     outline: none;
     box-shadow: 0;
     background-color: none;
     opacity: 0;
   }
+}
+
+.simple-keyboard {
+  max-width: 850px;
+}
+
+/*
+  Theme: myTheme1
+*/
+.simple-keyboard.myTheme1 {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 0;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.simple-keyboard.myTheme1 .hg-button {
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+}
+
+.simple-keyboard.myTheme1 .hg-button:active {
+  background: #1c4995;
+  color: white;
+}
+
+#root .simple-keyboard.myTheme1 + .simple-keyboard-preview {
+  background: #1c4995;
 }

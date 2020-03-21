@@ -1,7 +1,25 @@
 <div class="flex-container dark">
     <div class="full-width">
-        <p>
-            settings works!
-        </p>
+        <app-status-bar [name]="'Configuration Wifi'"></app-status-bar>
+        <div>
+            <igx-list displayDensity="cosy">
+                <ng-template igxEmptyList>
+                    <p class="empty">Pas de réseau</p>
+                </ng-template>
+                <igx-list-item igxRipple igxRippleTarget=".igx-list__item-content" *ngFor="let network of networks;let index = index;"
+                               routerLinkActive="active-list-item" [ngStyle]="{'background-color':index===current ? '#1b70cb' : '' }">
+                    <p igxListLineTitle (click)="navigateRight()">{{network.ssid}}</p>
+                </igx-list-item>
+            </igx-list>
+        </div>
+        <igx-input-group *ngIf="displayKeyboard" [ngStyle]="{'visibility':displayKeyboard ? 'visible' : 'hidden'}">
+            <input igxInput id="password" type="text" [value]="keyboard.getInput()"/>
+            <label igxLabel for="password">Mot de passe</label>
+            <igx-suffix>
+                <igx-icon>security</igx-icon>
+            </igx-suffix>
+        </igx-input-group>
+        <label *ngIf="displayStatus" [ngStyle]="{'visibility':displayStatus ? 'visible' : 'hidden'}">{{status}}</label>
+        <div class="simple-keyboard" [ngStyle]="{'visibility':displayKeyboard ? 'visible' : 'hidden'}"></div>
     </div>
 </div>

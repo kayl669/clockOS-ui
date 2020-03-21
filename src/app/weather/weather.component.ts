@@ -17,7 +17,6 @@ export class WeatherComponent implements OnInit {
     }
 
     keyboard: Keyboard;
-    api;
 
     ngOnInit(): void {
         this.weatherService.getCity().subscribe(data => {
@@ -26,10 +25,15 @@ export class WeatherComponent implements OnInit {
         this.keyboard = new Keyboard({
             onChange: input => this.onChange(input),
             onKeyPress: button => this.onKeyPress(button),
+            debug: true,
             physicalKeyboardHighlight: true,
             syncInstanceInputs: true,
             mergeDisplay: true,
             useMouseEvents: true,
+            // Add
+            //    enableKeyNavigation?:boolean;
+            // to index.d.ts to make it work.
+            enableKeyNavigation: true,
             theme: 'hg-theme-default myTheme1',
             layoutName: 'default',
             layout: {
@@ -37,20 +41,20 @@ export class WeatherComponent implements OnInit {
                     'a z e r t y u i o p',
                     'q s d f g h j k l',
                     '{shift} w x c v b n m {backspace}',
-                    '{numbers} {space} {ent}'
+                    '{escape} {numbers} {space} {ent}'
                 ],
                 shift: [
                     'A Z E R T Y U I O P',
                     'Q S D F G H J K L',
                     '{shift} W X C V B N M {backspace}',
-                    '{numbers} {space} {ent}'
+                    '{escape} {numbers} {space} {ent}'
                 ],
-                numbers: ['1 2 3', '4 5 6', '7 8 9', '{abc} 0 {backspace}']
+                numbers: ['1 2 3', '4 5 6', '7 8 9', '{escape} {abc} 0 {backspace}']
             },
             display: {
                 '{numbers}': '123',
                 '{ent}': 'Entrée',
-                '{escape}': 'esc ⎋',
+                '{escape}': 'Echap',
                 '{tab}': 'tab ⇥',
                 '{backspace}': '⌫',
                 '{capslock}': 'Maj ⇪',
@@ -83,9 +87,7 @@ export class WeatherComponent implements OnInit {
                     console.log('SNOOZE');
                     break;
                 case 'STOP':  // Stop button pressed
-                    console.log('STOP');
-                    break;
-                default:
+                    this.navigateStop();
                     break;
             }
         });
@@ -112,6 +114,7 @@ export class WeatherComponent implements OnInit {
                 break;
             case 17:
                 // Right ctrl key
+                this.navigateStop();
                 break;
             case 13:
                 // Return key
@@ -142,6 +145,9 @@ export class WeatherComponent implements OnInit {
         }
         if (button === '{numbers}' || button === '{abc}') {
             this.handleNumbers();
+        }
+        if (button === '{escape}') {
+            this.router.navigate(['/']);
         }
         if (button === '{ent}') {
             this.navigateEnter();
@@ -190,6 +196,10 @@ export class WeatherComponent implements OnInit {
     private navigateOK() {
         // @ts-ignore
         this.keyboard.modules.keyNavigation.press();
+    }
+
+    private navigateStop() {
+        this.router.navigate(['/']);
     }
 
     private navigateEnter() {
