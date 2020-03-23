@@ -19,6 +19,7 @@ import {
     IgxAvatarModule,
     IgxButtonModule,
     IgxCardModule,
+    IgxGridModule,
     IgxIconModule,
     IgxInputGroupModule,
     IgxLayoutModule,
@@ -38,6 +39,8 @@ import {AlarmComponent} from './alarm/alarm.component';
 import {WeatherComponent} from './weather/weather.component';
 import {DeezerComponent} from './deezer/deezer.component';
 import {ScriptLoaderModule} from 'ngx-script-loader';
+import {DeezerPlaylistComponent} from './deezer-playlist/deezer-playlist.component';
+import {DeezerMainService} from './deezer-main.service';
 
 @NgModule({
     declarations: [
@@ -48,7 +51,8 @@ import {ScriptLoaderModule} from 'ngx-script-loader';
         SettingsComponent,
         AlarmComponent,
         WeatherComponent,
-        DeezerComponent
+        DeezerComponent,
+        DeezerPlaylistComponent
     ],
     imports: [
         BrowserModule,
@@ -71,9 +75,10 @@ import {ScriptLoaderModule} from 'ngx-script-loader';
         IgxNavbarModule,
         ScriptLoaderModule,
         IgxCardModule,
-        IgxAvatarModule
+        IgxAvatarModule,
+        IgxGridModule
     ],
-    providers: [WebsocketService, WeatherService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
+    providers: [WebsocketService, WeatherService, DeezerMainService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
     bootstrap: [AppComponent]
 })
 export class AppModule {

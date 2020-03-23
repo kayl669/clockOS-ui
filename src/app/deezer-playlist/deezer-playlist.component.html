@@ -1,0 +1,24 @@
+<div class="flex-container dark">
+    <div class="full-width">
+        <app-status-bar [name]="'Playlists'"></app-status-bar>
+        <igx-grid #grid1 igxPreventDocumentScroll [data]="localData" [paging]="true" [perPage]="10" [cellSelection]="'none'" [rowSelection]="'single'">
+            <ng-template igxRowSelector let-rowContext></ng-template>
+            <igx-column field="title" header="Titre" width="200">
+                <ng-template igxCell let-cell="cell">
+                    <div class="cell__inner">
+                        <igx-avatar [src]="cell.row.rowData.picture_small" size="small"></igx-avatar>
+                        <span>{{ cell.value }}</span>
+                    </div>
+                </ng-template>
+            </igx-column>
+
+            <igx-column field="nb_tracks" header="Nombre de titres" dataType="number">
+                <ng-template igxCell let-val>
+                    <div class="cell__inner">
+                        {{ val }}
+                    </div>
+                </ng-template>
+            </igx-column>
+        </igx-grid>
+    </div>
+</div>

@@ -20,6 +20,11 @@ export class MenuComponent implements AfterViewInit {
             routerLink: '/weather',
         },
         {
+            name: 'Playlists',
+            icon: 'queue_music',
+            routerLink: '/playlists',
+        },
+        {
             name: 'Configuration Wifi',
             icon: 'settings',
             routerLink: '/settings',
