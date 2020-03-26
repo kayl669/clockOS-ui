@@ -1,9 +1,8 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {DeezerMainService} from "../deezer-main.service";
-import {IgxGridComponent} from "igniteui-angular";
+import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {Router} from "@angular/router";
 import {WebsocketService} from "../web-socket.service";
-import DZ = DeezerSdk.DZ;
 
 @Component({
     selector: 'app-deezer-playlist',
@@ -13,12 +12,13 @@ import DZ = DeezerSdk.DZ;
 export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     localData: any[];
     current: number;
-    @ViewChild("grid1", {read: IgxGridComponent, static: true})
+    @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
     private socket;
     myDZ;
 
     constructor(public router: Router, private webSocket: WebsocketService, private deezerMainService: DeezerMainService) {
+        this.localData = [];
     }
 
     ngOnInit(): void {
@@ -91,7 +91,8 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
             this.myDZ.api('/user/me/playlists', (response) => {
                 this.localData = response.data;
                 this.current = 0;
-                console.log(response.data);
+                this.grid1.selectRows([this.localData[this.current].id]);
+                this.grid1.markForCheck();
             });
         });
     }
@@ -105,18 +106,20 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     }
 
     private navigateUp() {
+        console.log('UP');
         if (this.localData.length > 0) {
-            this.grid1.getRowByIndex(this.current).selected = false;
             this.current = (this.localData.length + this.current - 1) % this.localData.length;
-            this.grid1.getRowByIndex(this.current).selected = true;
+            this.grid1.deselectAllRows(true);
+            this.grid1.selectRows([this.localData[this.current].id]);
         }
     }
 
     private navigateDown() {
+        console.log('DOWN');
         if (this.localData.length > 0) {
-            this.grid1.getRowByIndex(this.current).selected = false;
             this.current = (this.current + 1) % this.localData.length;
-            this.grid1.getRowByIndex(this.current).selected = true;
+            this.grid1.deselectAllRows(true);
+            this.grid1.selectRows([this.localData[this.current].id]);
         }
     }
 
@@ -134,5 +137,12 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     private navigateStop() {
         this.router.navigate(['/']);
+    }
+
+    public click($event: IGridCellEventArgs) {
+        this.current = $event.cell.rowIndex;
+        this.grid1.deselectAllRows(true);
+        this.grid1.selectRows([this.localData[this.current].id]);
+        this.navigateOK();
     }
 }

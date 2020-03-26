@@ -18,6 +18,13 @@ $track-on-color: #1bbccb));
         $thumb-hover-color: #e9fafc,
         $thumb-color: #e9fafc));
 
+@include igx-grid(igx-grid-theme(
+        $row-selected-background: #1bbccb,
+        $row-selected-hover-background: transparentize(#1bbccb, 0.9),
+        $cell-selected-background: null,
+        $cell-active-border-color: transparentize(#1bbccb, 0.9),
+));
+
 /* app css stylesheet */
 
 /* Some Styles Reset */
@@ -97,6 +104,6 @@ app-status-bar {
   background-color: #afafaf;
 }
 
-#dz-root{
+#dz-root {
   visibility: hidden;
 }

@@ -1,4 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
+import {Router} from "@angular/router";
 
 @Component({
     selector: 'app-status-bar',
@@ -7,7 +8,7 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class StatusBarComponent implements OnInit {
 
-    constructor() {
+    constructor(public router: Router) {
     }
 
     title: string;

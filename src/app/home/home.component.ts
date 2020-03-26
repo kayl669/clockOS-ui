@@ -22,13 +22,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     timeAlarm: string = "";
 
     constructor(
-        private router: Router,
+        public router: Router,
         private webSocket: WebsocketService,
         private alarmService: AlarmService,
         private weatherService: WeatherService) {
     }
 
-    @HostBinding('@routeAnimation') routeAnimation = true;
     @HostBinding('style.display') display = 'block';
     @HostBinding('style.position') position = 'absolute';
 
