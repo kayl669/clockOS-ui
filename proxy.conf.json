@@ -40,5 +40,11 @@
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
+    },
+    "/channel.html": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
     }
 }

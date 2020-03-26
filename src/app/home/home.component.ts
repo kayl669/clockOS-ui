@@ -1,6 +1,5 @@
-import {AfterViewInit, Component, HostBinding, HostListener, OnInit, Renderer2} from '@angular/core';
+import {AfterViewInit, Component, HostBinding, HostListener, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import {fadeInZoom} from '../animations';
 import {WebsocketService} from '../web-socket.service';
 import {WeatherService} from '../weather.service';
 import {ICurrentWeather} from '../interfaces';
@@ -13,7 +12,6 @@ declare var $: any;
     selector: 'app-home',
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
-    animations: [fadeInZoom]
 })
 
 export class HomeComponent implements OnInit, AfterViewInit {
@@ -24,7 +22,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     timeAlarm: string = "";
 
     constructor(
-        private renderer: Renderer2,
         private router: Router,
         private webSocket: WebsocketService,
         private alarmService: AlarmService,
