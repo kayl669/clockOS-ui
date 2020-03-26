@@ -1,6 +1,6 @@
 <div class="flex-container dark">
     <div class="full-width">
-        <app-status-bar [name]="'Playlists'"></app-status-bar>
+        <app-status-bar [title]="'Playlists'"></app-status-bar>
         <igx-grid #grid1 igxPreventDocumentScroll [data]="localData" [paging]="true" [perPage]="10" [cellSelection]="'none'" [rowSelection]="'single'">
             <ng-template igxRowSelector let-rowContext></ng-template>
             <igx-column field="title" header="Titre" width="200">

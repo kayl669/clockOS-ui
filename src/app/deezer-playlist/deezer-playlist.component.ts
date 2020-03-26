@@ -16,6 +16,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     @ViewChild("grid1", {read: IgxGridComponent, static: true})
     public grid1: IgxGridComponent;
     private socket;
+    myDZ;
 
     constructor(public router: Router, private webSocket: WebsocketService, private deezerMainService: DeezerMainService) {
     }
@@ -68,12 +69,12 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
                 // Down key
                 this.navigateDown();
                 break;
-            case 17:
-                // Right ctrl key
+            case 35:
+                // End key
                 this.navigateStop();
                 break;
-            case 13:
-                // Return key
+            case 34:
+                // Page down key
                 this.navigateOK();
                 break;
             // any other key was pressed
@@ -82,11 +83,12 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         // @ts-ignore
-        this.deezerMainService.ensureConnected((msg, socket, token) => {
+        this.deezerMainService.ensureConnected((msg, socket, myDZ) => {
             console.log(msg);
-            console.log(token);
             this.socket = socket;
-            DZ.api('/user/me/playlists', (response) => {
+            this.myDZ = myDZ;
+            console.log("trying api");
+            this.myDZ.api('/user/me/playlists', (response) => {
                 this.localData = response.data;
                 this.current = 0;
                 console.log(response.data);
@@ -95,9 +97,11 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     }
 
     private navigateLeft() {
+        this.router.navigate(['/']);
     }
 
     private navigateRight() {
+        this.navigateOK();
     }
 
     private navigateUp() {
@@ -118,7 +122,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     private navigateOK() {
         var tracks = [];
-        DZ.api('/playlist/' + this.localData[this.current].id + '/tracks', ((response) => {
+        this.myDZ.api('/playlist/' + this.localData[this.current].id + '/tracks', ((response) => {
             console.log(response);
             for (let i = 0; i < response.data.length; i++) {
                 tracks.push(response.data[i].id);

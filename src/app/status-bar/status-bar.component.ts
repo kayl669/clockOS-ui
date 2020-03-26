@@ -10,7 +10,7 @@ export class StatusBarComponent implements OnInit {
     constructor() {
     }
 
-    @Input() name: String;
+    title: string;
     clock: number;
 
     private tickInterval: number = 1000; // ms

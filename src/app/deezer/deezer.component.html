@@ -1,4 +1,4 @@
-<igx-card type="outlined" [ngStyle]="{'visibility':visibleInfo ? 'visible' : 'hidden'}" class="myCard">
+<igx-card type="outlined" [ngStyle]="{'visibility':this.deezerMainComponent.visibleInfo ? 'visible' : 'hidden'}" class="myCard">
     <igx-card-actions [reverse]="true">
         <button igxButton="icon" (click)="this.socket.emit('play')">
             <igx-icon>play_arrow</igx-icon>
@@ -24,11 +24,11 @@
     </igx-card-actions>
     <igx-card-header>
         <igx-card-media width="80px" height="80px">
-            <img src="{{cover}}"/>
+            <img src="{{this.deezerMainComponent.cover}}"/>
         </igx-card-media>
-        <h3 igxCardHeaderTitle>{{title}}</h3>
-        <h5 igxCardHeaderSubtitle>{{artist}}</h5>
-        <h5 igxCardHeaderSubtitle>{{album}}</h5>
+        <h3 igxCardHeaderTitle>{{this.deezerMainComponent.title}}</h3>
+        <h5 igxCardHeaderSubtitle>{{this.deezerMainComponent.artist}}</h5>
+        <h5 igxCardHeaderSubtitle>{{this.deezerMainComponent.album}}</h5>
         <igx-slider igxCardHeaderTitle id="position" [minValue]="0" [maxValue]="100" [continuous]=true [(ngModel)]="position" class="slider"></igx-slider>
     </igx-card-header>
 </igx-card>

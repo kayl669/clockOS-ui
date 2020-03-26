@@ -125,12 +125,12 @@ export class SettingsComponent implements OnInit, AfterViewInit {
                 // Down key
                 this.navigateDown();
                 break;
-            case 17:
-                // Right ctrl key
+            case 35:
+                // End key
                 this.navigateStop();
                 break;
-            case 13:
-                // Return key
+            case 34:
+                // Page down key
                 this.navigateOK();
                 break;
             default:
