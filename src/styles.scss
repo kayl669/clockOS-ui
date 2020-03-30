@@ -11,6 +11,7 @@
 @include igx-switch(igx-switch-theme($thumb-on-color: #e9fafc,
 $track-on-color: #1bbccb));
 @include igx-slider(igx-slider-theme(
+        $schema: $dark-schema,
         $base-track-hover-color: transparentize(#1bbccb, 0.9),
         $base-track-color: transparentize(#1bbccb, 0.9),
         $track-hover-color: #1bbccb,
@@ -19,6 +20,7 @@ $track-on-color: #1bbccb));
         $thumb-color: #e9fafc));
 
 @include igx-grid(igx-grid-theme(
+        $schema: $dark-schema,
         $row-selected-background: #1bbccb,
         $row-selected-hover-background: transparentize(#1bbccb, 0.9),
         $cell-selected-background: null,

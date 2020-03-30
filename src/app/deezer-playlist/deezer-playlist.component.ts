@@ -3,6 +3,7 @@ import {DeezerMainService} from "../deezer-main.service";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {Router} from "@angular/router";
 import {WebsocketService} from "../web-socket.service";
+import DZ = DeezerSdk.DZ;
 
 @Component({
     selector: 'app-deezer-playlist',
@@ -15,7 +16,6 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
     private socket;
-    myDZ;
 
     constructor(public router: Router, private webSocket: WebsocketService, private deezerMainService: DeezerMainService) {
         this.localData = [];
@@ -23,7 +23,6 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     ngOnInit(): void {
         this.webSocket.connect().subscribe((msg) => {
-            console.log('Response from websocket: ' + msg.data);
             switch (msg.data) {
                 case 'LEFT':  // Left button pressed
                     this.navigateLeft();
@@ -83,16 +82,13 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         // @ts-ignore
-        this.deezerMainService.ensureConnected((msg, socket, myDZ) => {
+        this.deezerMainService.ensureConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
-            this.myDZ = myDZ;
-            console.log("trying api");
-            this.myDZ.api('/user/me/playlists', (response) => {
+            DZ.api('/user/me/playlists', (response) => {
                 this.localData = response.data;
                 this.current = 0;
                 this.grid1.selectRows([this.localData[this.current].id]);
-                this.grid1.markForCheck();
             });
         });
     }
@@ -124,14 +120,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     }
 
     private navigateOK() {
-        var tracks = [];
-        this.myDZ.api('/playlist/' + this.localData[this.current].id + '/tracks', ((response) => {
-            console.log(response);
-            for (let i = 0; i < response.data.length; i++) {
-                tracks.push(response.data[i].id);
-            }
-            this.socket.emit('tracks', tracks);
-        }).bind(this));
+        this.socket.emit('playlist', {playlist: this.localData[this.current].id});
         this.router.navigate(['/']);
     }
 

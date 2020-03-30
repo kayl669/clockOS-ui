@@ -15,7 +15,7 @@ export class AlarmService {
         return this.httpClient.get<IAlarm>('/alarm');
     }
 
-    public setAlarm(alarm: IAlarm) {
+    public setAlarm(alarm: IAlarm):Promise<any> {
         console.log('activate ' + alarm.activate);
         console.log('hour ' + alarm.hour);
         console.log('minute ' + alarm.minute);
@@ -24,7 +24,7 @@ export class AlarmService {
         console.log('volumeIncreaseDuration ' + alarm.volumeIncreaseDuration);
         const headers = new HttpHeaders()
             .set('Content-Type', 'application/json');
-        this.httpClient.post<IAlarm>(`/alarm`, alarm, {headers}).subscribe(res => console.log(res));
+        return this.httpClient.post<IAlarm>(`/alarm`, alarm, {headers}).toPromise();
     }
 
     public stopAlarm() {

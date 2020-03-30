@@ -1,6 +1,5 @@
 import {AfterViewInit, Component} from '@angular/core';
 import {DeezerMainService} from "../deezer-main.service";
-import DZ = DeezerSdk.DZ;
 
 
 @Component({
@@ -18,7 +17,7 @@ export class DeezerComponent implements AfterViewInit {
 
     ngAfterViewInit(): void {
         // noinspection JSUnusedLocalSymbols
-        this.deezerMainComponent.ensureConnected((msg, socket, myDZ) => {
+        this.deezerMainComponent.ensureConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
 

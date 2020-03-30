@@ -14,6 +14,7 @@ export interface IAlarm {
     minute: number;
     volumeIncreaseDuration: number;
     snoozeAfter: number;
+    playlist:number;
 }
 
 export interface ICity {
@@ -25,6 +26,7 @@ export interface IConfig {
     openWeatherAppId: string;
     deezerAppId: string;
     server: string;
+    ws: string;
 }
 
 export interface IWifiScan {

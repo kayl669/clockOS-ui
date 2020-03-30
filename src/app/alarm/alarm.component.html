@@ -20,17 +20,39 @@
                 </ng-template>
             </igx-time-picker>
         </section>
-        <section [ngStyle]="{'background-color':selected ==='volume' ? '#1b70cb' : '' }">
+        <section>
             <label>Volume {{volume}}</label>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='volume' ? '#1b70cb' : '' }">
             <igx-slider id="volume" [minValue]="10" [maxValue]="100" [step]="10" [continuous]=true [(ngModel)]="volume"></igx-slider>
         </section>
-        <section [ngStyle]="{'background-color':selected ==='volumeIncreaseDuration' ? '#1b70cb' : '' }">
+        <section>
             <label>Augmenter le volume pendant {{volumeIncreaseDuration}} minutes</label>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='volumeIncreaseDuration' ? '#1b70cb' : '' }">
             <igx-slider [minValue]="1" [maxValue]="120" [continuous]=true [(ngModel)]="volumeIncreaseDuration"></igx-slider>
         </section>
-        <section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? '#1b70cb' : '' }">
+        <section>
             <label>Arrêt après {{snoozeAfter}} minutes</label>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? '#1b70cb' : '' }">
             <igx-slider [minValue]="1" [maxValue]="120" [step]="5" [continuous]=true [(ngModel)]="snoozeAfter"></igx-slider>
+        </section>
+        <section>
+            <label>Playlist</label>
+        </section>
+        <section [ngStyle]="{'background-color':selected ==='playlist' ? '#1b70cb' : '' }">
+            <igx-carousel #playlistSelect animationType="slide" [navigation]="false" (onSlideAdded)="onSlideAdded()">
+                <ng-template igxCarouselIndicator let-slide></ng-template>
+                <igx-slide *ngFor="let item of playlists">
+                    <igx-card class="myCard">
+                        <igx-card-header>
+                            <igx-avatar [src]="item.picture" size="small"></igx-avatar>
+                            <h5 igxCardHeaderTitle>{{item.title}}</h5>
+                        </igx-card-header>
+                    </igx-card>
+                </igx-slide>
+            </igx-carousel>
         </section>
     </div>
 </div>

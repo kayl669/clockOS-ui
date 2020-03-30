@@ -77,16 +77,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
             });
         }, 60000);
         this.tick();
+    }
+
+    ngAfterViewInit() {
         this.alarmService.getAlarm().subscribe(result => {
             this.enableAlarm = result.activate;
             const d = new Date();
             this.timeAlarm = moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
         })
-    }
-
-    ngAfterViewInit() {
         this.webSocket.connect().subscribe((msg) => {
-            console.log('Response from websocket: ' + msg.data);
             switch (msg.data) {
                 case 'RIGHT':  // Right button pressed
                     this.navigateRight();

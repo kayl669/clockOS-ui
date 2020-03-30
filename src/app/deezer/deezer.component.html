@@ -1,6 +1,6 @@
-<igx-card type="outlined" [ngStyle]="{'visibility':this.deezerMainComponent.visibleInfo ? 'visible' : 'hidden'}" class="myCard">
+<igx-card type="outlined" [ngStyle]="{'visibility':(this.deezerMainComponent.musicStatus == 'playing' || this.deezerMainComponent.musicStatus == 'pause') ? 'visible' : 'hidden'}" class="myCard">
     <igx-card-actions [reverse]="true">
-        <button igxButton="icon" (click)="this.socket.emit('play')">
+        <button igxButton="icon" (click)="this.socket.emit('play', this.deezerMainComponent.trackId)">
             <igx-icon>play_arrow</igx-icon>
         </button>
         <button igxButton="icon" (click)="this.socket.emit('pause')">

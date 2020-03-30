@@ -79,7 +79,6 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             this.current = 0;
         });
         this.webSocket.connect().subscribe((msg) => {
-            console.log('Response from websocket: ' + msg.data);
             switch (msg.data) {
                 case 'LEFT':  // Left button pressed
                     this.navigateLeft();

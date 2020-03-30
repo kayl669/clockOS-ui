@@ -19,6 +19,7 @@ import {
     IgxAvatarModule,
     IgxButtonModule,
     IgxCardModule,
+    IgxCarouselModule,
     IgxGridModule,
     IgxIconModule,
     IgxInputGroupModule,
@@ -28,6 +29,7 @@ import {
     IgxNavigationDrawerModule,
     IgxRadioModule,
     IgxRippleModule,
+    IgxSelectModule,
     IgxSliderModule,
     IgxSwitchModule,
     IgxTimePickerModule,
@@ -76,7 +78,9 @@ import {DeezerMainService} from './deezer-main.service';
         ScriptLoaderModule,
         IgxCardModule,
         IgxAvatarModule,
-        IgxGridModule
+        IgxGridModule,
+        IgxSelectModule,
+        IgxCarouselModule
     ],
     providers: [WebsocketService, WeatherService, DeezerMainService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
     bootstrap: [AppComponent]
