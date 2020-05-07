@@ -3,6 +3,7 @@ import {Injectable} from '@angular/core';
 import {ScriptService} from "ngx-script-loader";
 import {HttpClient} from "@angular/common/http";
 import {IConfig} from "./interfaces";
+import {AudioService} from "./audio.service";
 import DZ = DeezerSdk.DZ;
 import LoginResponse = DeezerSdk.LoginResponse;
 import PlayerState = DeezerSdk.PlayerState;
@@ -28,7 +29,7 @@ export class DeezerMainService {
     album = '';
     cover = '';
 
-    constructor(private scriptService: ScriptService, private httpClient: HttpClient) {
+    constructor(private scriptService: ScriptService, private httpClient: HttpClient, private audioService: AudioService) {
         this.connected = false;
     }
 
@@ -136,6 +137,18 @@ export class DeezerMainService {
             });
         });
 
+        this.socket.on('radio', (radio) => {
+            DZ.player.pause();
+            this.audioService.stop();
+            this.audioService.playStream(radio.url);
+            this.title = radio.name;
+            this.artist = 'Radio';
+            this.cover = radio.favicon;
+            this.album = '';
+            this.musicStatus = 'radio';
+            this.lastPosition = 0;
+        });
+
         // What is the current track
         this.socket.on('isCurrent', () => {
             console.log('isCurrent');
@@ -156,6 +169,7 @@ export class DeezerMainService {
 
         // Play
         this.socket.on('play', () => {
+            this.audioService.stop();
             if (this.musicStatus == 'stop') {
                 if (this.queue.length > 0) {
                     // If no track loaded, play the first in the queue

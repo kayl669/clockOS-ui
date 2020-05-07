@@ -1,5 +1,5 @@
-<igx-card type="outlined" [ngStyle]="{'visibility':(this.deezerMainComponent.musicStatus == 'playing' || this.deezerMainComponent.musicStatus == 'pause') ? 'visible' : 'hidden'}" class="myCard">
-    <igx-card-actions [reverse]="true">
+<igx-card type="outlined" [ngStyle]="{'visibility':(this.deezerMainComponent.musicStatus == 'radio' || this.deezerMainComponent.musicStatus == 'playing' || this.deezerMainComponent.musicStatus == 'pause') ? 'visible' : 'hidden'}" class="myCard">
+    <igx-card-actions [ngStyle]="{'visibility':(this.deezerMainComponent.musicStatus == 'playing' || this.deezerMainComponent.musicStatus == 'pause') ? 'visible' : 'hidden'}" [reverse]="true">
         <button igxButton="icon" (click)="this.socket.emit('play', this.deezerMainComponent.trackId)">
             <igx-icon>play_arrow</igx-icon>
         </button>
@@ -22,7 +22,7 @@
             <igx-icon>skip_next</igx-icon>
         </button>
     </igx-card-actions>
-    <igx-card-header>
+    <igx-card-header [ngStyle]="{'visibility':(this.deezerMainComponent.musicStatus == 'radio' || this.deezerMainComponent.musicStatus == 'playing' || this.deezerMainComponent.musicStatus == 'pause') ? 'visible' : 'hidden'}">
         <igx-card-media width="80px" height="80px">
             <img src="{{this.deezerMainComponent.cover}}"/>
         </igx-card-media>

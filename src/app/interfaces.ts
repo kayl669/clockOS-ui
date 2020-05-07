@@ -39,3 +39,9 @@ export interface IWifiConnect {
     ssid: string,
     psk: string
 }
+
+export interface IRadio {
+    url:string,
+    name:string,
+    favicon:string
+}
