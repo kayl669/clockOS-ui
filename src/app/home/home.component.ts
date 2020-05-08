@@ -5,6 +5,7 @@ import {WeatherService} from '../weather.service';
 import {ICurrentWeather} from '../interfaces';
 import {AlarmService} from '../alarm.service';
 import moment from 'moment';
+import {DeezerMainService} from "../deezer-main.service";
 
 declare var $: any;
 
@@ -25,7 +26,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
         public router: Router,
         private webSocket: WebsocketService,
         private alarmService: AlarmService,
-        private weatherService: WeatherService) {
+        private weatherService: WeatherService,
+        private deezerMainService: DeezerMainService) {
     }
 
     @HostBinding('style.display') display = 'block';
@@ -120,9 +122,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     private navigateUp() {
+        if (this.deezerMainService.isPlaying()) {
+            var volume = this.deezerMainService.getVolume() + 10;
+            if (volume > 100)
+                volume = 100;
+            this.deezerMainService.setVolume(volume);
+        }
     }
 
     private navigateDown() {
+        if (this.deezerMainService.isPlaying()) {
+            var volume = this.deezerMainService.getVolume() - 10;
+            if (volume < 0)
+                volume = 0;
+            this.deezerMainService.setVolume(volume);
+        }
     }
 
     private navigateOK() {
@@ -130,6 +144,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     private navigateStop() {
         console.log('STOP');
+        if (this.deezerMainService.isPlaying()) {
+            this.deezerMainService.stop();
+        }
         this.alarmService.stopAlarm();
     }
 

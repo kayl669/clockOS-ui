@@ -65,6 +65,10 @@ export class AudioService {
         return this.streamObservable(url).pipe(takeUntil(this.stop$)).subscribe();
     }
 
+    setVolume(vol) {
+        this.audioObj.volume = vol / 100;
+    }
+
     play() {
         this.audioObj.play();
     }
@@ -108,5 +112,13 @@ export class AudioService {
 
     getState(): Observable<StreamState> {
         return this.stateChange.asObservable();
+    }
+
+    isPlaying() {
+        return this.state.playing;
+    }
+
+    getVolume() {
+        return this.audioObj.volume * 100;
     }
 }

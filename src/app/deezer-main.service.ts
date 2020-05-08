@@ -102,6 +102,32 @@ export class DeezerMainService {
         }
     }
 
+    isPlaying() {
+        return DZ.player.isPlaying() || this.audioService.isPlaying();
+    }
+
+    stop() {
+        this.socket.emit('stop');
+    }
+
+    setVolume(volume: number) {
+        if (DZ.player.isPlaying()) {
+            DZ.player.setVolume(volume);
+        } else if (this.audioService.isPlaying()) {
+            this.audioService.setVolume(volume);
+        }
+    }
+
+    getVolume() {
+        if (DZ.player.isPlaying()) {
+            return DZ.player.getVolume();
+        }
+        if (this.audioService.isPlaying()) {
+            return this.audioService.getVolume();
+        }
+        return 0;
+    }
+
     player() {
         // Play a track
         this.socket.on('track', (trackId) => {
@@ -191,7 +217,10 @@ export class DeezerMainService {
         // Stop
         this.socket.on('stop', () => {
             console.log('stop');
-            DZ.player.pause();
+            if (this.audioService.isPlaying()) {
+                this.audioService.stop();
+            } else if (DZ.player.isPlaying())
+                DZ.player.pause();
             this.musicStatus = 'stop';
             this.socket.emit('musicStatus', 'stop');
         });
@@ -199,6 +228,7 @@ export class DeezerMainService {
         // Volume
         this.socket.on('volume', (vol) => {
             console.log('volume', vol);
+            this.audioService.setVolume(vol);
             DZ.player.setVolume(vol);
         });
 
