@@ -1,10 +1,9 @@
 <div class="flex-container dark">
     <div class="full-width">
         <app-status-bar [title]="'Radios'"></app-status-bar>
-        <igx-grid #grid1 igxPreventDocumentScroll [data]="localData" [cellSelection]="'none'" [rowSelection]="'single'"
-                  [hideRowSelectors]="true" [primaryKey]="'url'" (onCellClick)="click($event)">
+        <igx-grid #grid1 igxPreventDocumentScroll [data]="localData" [cellSelection]="'none'" [rowSelection]="'single'" [height]="'100%'" [hideRowSelectors]="true" [primaryKey]="'url'" (onCellClick)="click($event)">
             <ng-template igxRowSelector let-rowContext></ng-template>
-            <igx-column field="name" header="Titre" width="200">
+            <igx-column field="name" header="Titre">
                 <ng-template igxCell let-cell="cell">
                     <div class="cell__inner">
                         <igx-avatar [src]="cell.row.rowData.favicon" size="small"></igx-avatar>

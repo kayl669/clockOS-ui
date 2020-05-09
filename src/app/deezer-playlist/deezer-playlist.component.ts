@@ -106,6 +106,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
         if (this.localData.length > 0) {
             this.current = (this.localData.length + this.current - 1) % this.localData.length;
             this.grid1.deselectAllRows(true);
+            this.grid1.navigateTo(this.current, 0);
             this.grid1.selectRows([this.localData[this.current].id]);
         }
     }
@@ -115,6 +116,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
         if (this.localData.length > 0) {
             this.current = (this.current + 1) % this.localData.length;
             this.grid1.deselectAllRows(true);
+            this.grid1.navigateTo(this.current, 0);
             this.grid1.selectRows([this.localData[this.current].id]);
         }
     }

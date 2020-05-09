@@ -14,7 +14,7 @@ export interface IAlarm {
     minute: number;
     volumeIncreaseDuration: number;
     snoozeAfter: number;
-    playlist:number;
+    playlist: number;
 }
 
 export interface ICity {
@@ -41,7 +41,7 @@ export interface IWifiConnect {
 }
 
 export interface IRadio {
-    url:string,
-    name:string,
-    favicon:string
+    url: string,
+    name: string,
+    favicon: string
 }
