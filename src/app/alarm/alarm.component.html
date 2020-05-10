@@ -38,13 +38,28 @@
         <section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? '#1b70cb' : '' }">
             <igx-slider [minValue]="1" [maxValue]="120" [step]="5" [continuous]=true [(ngModel)]="snoozeAfter"></igx-slider>
         </section>
-        <section>
-            <label>Playlist</label>
+        <section [ngStyle]="{'background-color':selected ==='enableDeezer' ? '#1b70cb' : '' }">
+            <igx-switch #enableDeezer>{{enableDeezer.checked ? 'Playlist Deezer' : 'Radio'}}</igx-switch>
         </section>
-        <section [ngStyle]="{'background-color':selected ==='playlist' ? '#1b70cb' : '' }">
-            <igx-carousel #playlistSelect animationType="slide" [navigation]="false" (onSlideAdded)="onSlideAdded()">
+        <section
+                [ngStyle]="{'background-color':selected ==='playlist' ? '#1b70cb' : '' ,'visibility': (enableDeezer.checked ?'visible':'hidden'),'display': (enableDeezer.checked ?'block':'none')}">
+            <igx-carousel #playlistSelect animationType="slide" [navigation]="false" (onSlideAdded)="onPlaylistAdded()">
                 <ng-template igxCarouselIndicator let-slide></ng-template>
                 <igx-slide *ngFor="let item of playlists">
+                    <igx-card class="myCard">
+                        <igx-card-header>
+                            <igx-avatar [src]="item.picture" size="small"></igx-avatar>
+                            <h5 igxCardHeaderTitle>{{item.title}}</h5>
+                        </igx-card-header>
+                    </igx-card>
+                </igx-slide>
+            </igx-carousel>
+        </section>
+        <section
+                [ngStyle]="{'background-color':selected ==='radios' ? '#1b70cb' : '' ,'visibility': (!enableDeezer.checked ?'visible':'hidden'),'display': (!enableDeezer.checked ?'block':'none')}">
+            <igx-carousel #radioSelect animationType="slide" [navigation]="false" (onSlideAdded)="onRadioAdded()">
+                <ng-template igxCarouselIndicator let-slide></ng-template>
+                <igx-slide *ngFor="let item of radios">
                     <igx-card class="myCard">
                         <igx-card-header>
                             <igx-avatar [src]="item.picture" size="small"></igx-avatar>

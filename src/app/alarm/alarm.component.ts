@@ -4,6 +4,8 @@ import {Router} from '@angular/router';
 import {WebsocketService} from '../web-socket.service';
 import {AlarmService} from '../alarm.service';
 import {DeezerMainService} from "../deezer-main.service";
+import {IRadio} from "../interfaces";
+import {HttpClient} from "@angular/common/http";
 import DZ = DeezerSdk.DZ;
 
 @Component({
@@ -17,14 +19,18 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     volumeIncreaseDuration;
     snoozeAfter;
     playlistCurrentIndex: number;
+    radioCurrentIndex: number;
     public playlists: Array<{ id: number, picture: string, title: string }> = [];
+    public radios: Array<{ id: string, picture: string, title: string }> = [];
     selected = 'enableToggle';
     @ViewChild('activate', {static: true}) activate: IgxSwitchComponent;
     @ViewChild('timePicker', {static: true}) timePicker: IgxTimePickerComponent;
     @ViewChild('timePickerValue', {static: false}) timePickerValue: IgxInputDirective;
+    @ViewChild('enableDeezer', {static: true}) enableDeezer: IgxSwitchComponent;
     @ViewChild("playlistSelect", {static: false}) public playlistSelect: IgxCarouselComponent;
+    @ViewChild("radioSelect", {static: false}) public radioSelect: IgxCarouselComponent;
 
-    constructor(public router: Router, private webSocket: WebsocketService, private alarmService: AlarmService, private deezerMainService: DeezerMainService) {
+    constructor(public router: Router, private webSocket: WebsocketService, private alarmService: AlarmService, private deezerMainService: DeezerMainService, private httpClient: HttpClient) {
     }
 
     ngOnInit(): void {
@@ -47,12 +53,25 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                             let item = {id: response.data[i].id, picture: response.data[i].picture_small, title: response.data[i].title};
                             this.playlists.push(item);
                             if (result.playlist == response.data[i].id) {
+                                this.enableDeezer.checked = true;
                                 this.playlistCurrentIndex = i;
                             }
                         }
                     });
                 }).bind(this));
-
+                this.httpClient.get<IRadio[]>("https://de1.api.radio-browser.info/json/stations/search?countrycode=FR&language=fr&limit=30&order=clickcount&reverse=true").subscribe(data => {
+                    console.log(data);
+                    this.radios = [];
+                    this.radioCurrentIndex = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        let item = {id: data[i].stationuuid, picture: data[i].favicon, title: data[i].name};
+                        this.radios.push(item);
+                        if (result.stationuuid == data[i].stationuuid) {
+                            this.enableDeezer.checked = false;
+                            this.radioCurrentIndex = i;
+                        }
+                    }
+                });
             }).bind(this));
     }
 
@@ -119,6 +138,10 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     private navigateUp() {
         switch (this.selected) {
             case 'playlist':
+            case 'radios':
+                this.selected = 'enableDeezer';
+                break;
+            case 'enableDeezer':
                 this.selected = 'snoozeAfter';
                 break;
             case 'snoozeAfter':
@@ -140,7 +163,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.selected = 'enableToggle';
                 break;
             case 'enableToggle':
-                this.selected = 'playlist';
+                this.selected = this.enableDeezer.checked ? 'playlist' : 'radios';
                 break;
         }
         console.log(this.selected);
@@ -166,9 +189,13 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.selected = 'snoozeAfter';
                 break;
             case 'snoozeAfter':
-                this.selected = 'playlist';
+                this.selected = 'enableDeezer';
+                break;
+            case 'enableDeezer':
+                this.selected = this.enableDeezer.checked ? 'playlist' : 'radios';
                 break;
             case 'playlist':
+            case 'radios':
                 this.selected = 'enableToggle';
                 break;
         }
@@ -197,12 +224,21 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             case 'snoozeAfter':
                 this.snoozeAfter = this.snoozeAfter + 5;
                 break;
+            case 'enableDeezer':
+                this.enableDeezer.checked = !this.enableDeezer.checked;
+                break;
             case 'playlist':
                 this.playlistSelect.get(this.playlistCurrentIndex).active = false;
                 this.playlistCurrentIndex = (this.playlistCurrentIndex + 1) % this.playlists.length;
                 this.playlistSelect.get(this.playlistCurrentIndex).active = true;
                 break;
+            case 'radios':
+                this.radioSelect.get(this.radioCurrentIndex).active = false;
+                this.radioCurrentIndex = (this.radioCurrentIndex + 1) % this.radios.length;
+                this.radioSelect.get(this.radioCurrentIndex).active = true;
+                break;
         }
+        console.log(this.selected);
     }
 
     private navigateLeft() {
@@ -227,12 +263,21 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             case 'snoozeAfter':
                 this.snoozeAfter = this.snoozeAfter - 5;
                 break;
+            case 'enableDeezer':
+                this.enableDeezer.checked = !this.enableDeezer.checked;
+                break;
             case 'playlist':
                 this.playlistSelect.get(this.playlistCurrentIndex).active = false;
                 this.playlistCurrentIndex = (this.playlists.length + this.playlistCurrentIndex - 1) % this.playlists.length;
                 this.playlistSelect.get(this.playlistCurrentIndex).active = true;
                 break;
+            case 'radios':
+                this.radioSelect.get(this.radioCurrentIndex).active = false;
+                this.radioCurrentIndex = (this.radios.length + this.radioCurrentIndex - 1) % this.radios.length;
+                this.radioSelect.get(this.radioCurrentIndex).active = true;
+                break;
         }
+        console.log(this.selected);
     }
 
     private navigateOK() {
@@ -243,8 +288,10 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             volume: this.volume,
             volumeIncreaseDuration: this.volumeIncreaseDuration,
             snoozeAfter: this.snoozeAfter,
-            playlist: this.playlists[this.playlistCurrentIndex].id,
-        }).then(()=>{
+            type: this.enableDeezer.checked ? 'Deezer' : 'Radio',
+            playlist: this.enableDeezer.checked ? this.playlists[this.playlistCurrentIndex].id : 0,
+            stationuuid: this.enableDeezer.checked ? '' : this.radios[this.radioCurrentIndex].id
+        }).then(() => {
             this.router.navigate(['/']);
         });
     }
@@ -261,7 +308,11 @@ export class AlarmComponent implements AfterViewInit, OnInit {
         return displayTime.split(':')[1];
     }
 
-    onSlideAdded() {
+    onPlaylistAdded() {
         this.playlistSelect.get(this.playlistSelect.slides.length - 1).active = this.playlistSelect.slides.length - 1 == this.playlistCurrentIndex;
+    }
+
+    onRadioAdded() {
+        this.radioSelect.get(this.radioSelect.slides.length - 1).active = this.radioSelect.slides.length - 1 == this.radioCurrentIndex;
     }
 }

@@ -2,7 +2,7 @@ import * as io from 'socket.io-client';
 import {Injectable} from '@angular/core';
 import {ScriptService} from "ngx-script-loader";
 import {HttpClient} from "@angular/common/http";
-import {IConfig} from "./interfaces";
+import {IConfig, IRadio} from "./interfaces";
 import {AudioService} from "./audio.service";
 import DZ = DeezerSdk.DZ;
 import LoginResponse = DeezerSdk.LoginResponse;
@@ -20,7 +20,8 @@ export class DeezerMainService {
     server;
     socket;
     queue = [];
-    public trackId;
+    trackId;
+    stationuuid;
     currentTrack: Track;
     lastPosition = 0; // last position of the track
     musicStatus = 'stop';
@@ -102,6 +103,27 @@ export class DeezerMainService {
         }
     }
 
+    playRadio(stationuuid) {
+        DZ.player.pause();
+        this.audioService.stop();
+        console.log('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid);
+        this.httpClient.get<IRadio>('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid).subscribe(data => {
+            console.log(data[0].stationuuid);
+            console.log(data[0].url);
+            console.log(data[0].name);
+            console.log(data[0].favicon);
+            console.log(data[0].tags);
+            this.stationuuid = data[0].stationuuid;
+            this.audioService.playStream(data[0].url);
+            this.title = data[0].name;
+            this.artist = 'Radio';
+            this.cover = data[0].favicon;
+            this.album = data[0].tags;
+            this.musicStatus = 'radio';
+            this.lastPosition = 0;
+        });
+    }
+
     isPlaying() {
         return DZ.player.isPlaying() || this.audioService.isPlaying();
     }
@@ -136,6 +158,7 @@ export class DeezerMainService {
             DZ.player.playTracks([trackId], true, 0, (response) => {
                 console.log(response);
                 this.trackId = response.tracks[0].id;
+                this.stationuuid = '';
                 console.log(response.tracks[0].title);
                 console.log(response.tracks[0].duration);
                 console.log(response.tracks[0].artist.name);
@@ -148,6 +171,8 @@ export class DeezerMainService {
             console.log('playlist ', playlist);
             var tracks = [];
             var shuffledTracks = [];
+            this.stationuuid = '';
+            this.audioService.stop();
             DZ.player.playPlaylist(playlist.playlist, false, 0, (response) => {
                 for (let i = 0; i < response.tracks.length; i++) {
                     tracks.push(response.tracks[i]);
@@ -164,15 +189,7 @@ export class DeezerMainService {
         });
 
         this.socket.on('radio', (radio) => {
-            DZ.player.pause();
-            this.audioService.stop();
-            this.audioService.playStream(radio.url);
-            this.title = radio.name;
-            this.artist = 'Radio';
-            this.cover = radio.favicon;
-            this.album = '';
-            this.musicStatus = 'radio';
-            this.lastPosition = 0;
+            this.playRadio(radio.stationuuid);
         });
 
         // What is the current track
@@ -181,11 +198,13 @@ export class DeezerMainService {
             if (this.currentTrack != null) {
                 this.socket.emit('current', {
                     current: this.currentTrack,
+                    stationuuid: this.stationuuid,
                     musicStatus: this.musicStatus
                 });
             } else {
                 this.socket.emit('current', {
                     current: false,
+                    stationuuid: this.stationuuid,
                     musicStatus: this.musicStatus
                 });
             }
@@ -195,22 +214,28 @@ export class DeezerMainService {
 
         // Play
         this.socket.on('play', () => {
-            this.audioService.stop();
-            if (this.musicStatus == 'stop') {
-                if (this.queue.length > 0) {
-                    // If no track loaded, play the first in the queue
-                    DZ.player.playTracks(this.queue[0], true, 0, (response) => {
-                        this.queue.splice(0, 1);
-                        console.log(response);
-                    });
-                }
+            console.log('Let s play ', this.stationuuid);
+            if (this.stationuuid !== '') {
+                this.playRadio(this.stationuuid);
             } else {
-                DZ.player.play();
+                this.audioService.stop();
+                if (this.musicStatus == 'stop') {
+                    if (this.queue.length > 0) {
+                        // If no track loaded, play the first in the queue
+                        DZ.player.playTracks(this.queue[0], true, 0, (response) => {
+                            this.queue.splice(0, 1);
+                            console.log(response);
+                        });
+                    }
+                } else {
+                    DZ.player.play();
+                }
             }
         });
         // Pause
         this.socket.on('pause', () => {
             console.log('pause');
+            this.audioService.pause();
             DZ.player.pause();
             this.socket.emit('musicStatus', 'pause');
         });

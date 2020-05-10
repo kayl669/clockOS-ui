@@ -109,7 +109,7 @@ export class RadioComponent implements OnInit, AfterViewInit {
             this.current = (this.localData.length + this.current - 1) % this.localData.length;
             this.grid1.deselectAllRows(true);
             this.grid1.navigateTo(this.current, 0);
-            this.grid1.selectRows([this.localData[this.current].url]);
+            this.grid1.selectRows([this.localData[this.current].stationuuid]);
         }
     }
 
@@ -119,15 +119,13 @@ export class RadioComponent implements OnInit, AfterViewInit {
             this.current = (this.current + 1) % this.localData.length;
             this.grid1.deselectAllRows(true);
             this.grid1.navigateTo(this.current, 0);
-            this.grid1.selectRows([this.localData[this.current].url]);
+            this.grid1.selectRows([this.localData[this.current].stationuuid]);
         }
     }
 
     private navigateOK() {
         this.socket.emit('radio', {
-            name: this.localData[this.current].name,
-            url: this.localData[this.current].url,
-            favicon: this.localData[this.current].favicon
+            stationuuid: this.localData[this.current].stationuuid
         });
         this.router.navigate(['/']);
     }
@@ -139,7 +137,7 @@ export class RadioComponent implements OnInit, AfterViewInit {
     public click($event: IGridCellEventArgs) {
         this.current = $event.cell.rowIndex;
         this.grid1.deselectAllRows(true);
-        this.grid1.selectRows([this.localData[this.current].url]);
+        this.grid1.selectRows([this.localData[this.current].stationuuid]);
         this.navigateOK();
     }
 }

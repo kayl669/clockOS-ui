@@ -15,23 +15,30 @@ export class AlarmService {
         return this.httpClient.get<IAlarm>('/alarm');
     }
 
-    public setAlarm(alarm: IAlarm):Promise<any> {
+    public setAlarm(alarm: IAlarm): Promise<any> {
         console.log('activate ' + alarm.activate);
         console.log('hour ' + alarm.hour);
         console.log('minute ' + alarm.minute);
-        console.log('snoozeAfter ' + alarm.snoozeAfter);
         console.log('volume ' + alarm.volume);
         console.log('volumeIncreaseDuration ' + alarm.volumeIncreaseDuration);
+        console.log('snoozeAfter ' + alarm.snoozeAfter);
+        console.log('type ' + alarm.type);
+        console.log('playlist ' + alarm.playlist);
+        console.log('stationuuid ' + alarm.stationuuid);
         const headers = new HttpHeaders()
             .set('Content-Type', 'application/json');
         return this.httpClient.post<IAlarm>(`/alarm`, alarm, {headers}).toPromise();
     }
 
     public stopAlarm() {
-        this.httpClient.get<IAlarm>('/stopAlarm').subscribe();
+        this.httpClient.get<IAlarm>('/stopAlarm?date=' + new Date()).subscribe( data => {
+            console.log(data)
+        });
     }
 
     public snoozeAlarm() {
-        this.httpClient.get<IAlarm>('/snoozeAlarm').subscribe();
+        this.httpClient.get<IAlarm>('/snoozeAlarm?date='+new Date()).subscribe(data => {
+            console.log(data)
+        });
     }
 }

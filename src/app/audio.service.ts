@@ -78,6 +78,7 @@ export class AudioService {
     }
 
     stop() {
+        this.audioObj.pause();
         this.stop$.next();
     }
 
@@ -98,6 +99,8 @@ export class AudioService {
                 this.resetState();
                 this.state.error = true;
                 break;
+            default:
+                console.log('not manage ', event.type);
         }
         this.stateChange.next(this.state);
     }
