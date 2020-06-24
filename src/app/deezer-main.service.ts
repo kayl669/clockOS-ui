@@ -59,9 +59,15 @@ export class DeezerMainService {
                                     if (res.authResponse) {
                                         this.player();
                                         DZ.api('/user/me', ((response) => {
+                                            if (!response.name) {
+                                                this.disconnect();
+                                                return;
+                                            }
                                             this.connected = true;
                                             myCallback('Welcome ' + response.name, this.socket, DZ);
                                         }).bind(this));
+                                    } else {
+                                        this.disconnect();
                                     }
                                 }).bind(this));
                             }).bind(this)
@@ -76,6 +82,13 @@ export class DeezerMainService {
                 myCallback('Already connect ' + response.name, this.socket, DZ);
             }).bind(this));
         }).bind(this));
+    }
+
+    disconnect() {
+        DZ.logout()
+        this.server = null;
+        this.socket = null;
+        this.connected = false;
     }
 
     updateInfos(data) {

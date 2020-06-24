@@ -58,6 +58,8 @@
         </svg>
         <div class="overlay">
             <div class="display-menu"><igx-icon (click)="this.router.navigate(['/menu']);">list</igx-icon></div>
+            <div class="display-music"><igx-icon *ngIf="this.deezerMainService.connected" (click)="this.disconnect()">music_note</igx-icon>
+                <igx-icon *ngIf="!this.deezerMainService.connected" (click)="this.reconnect()">music_off</igx-icon></div>
             <div class="display-icon"><i class="wi" [ngClass]="current.image"></i></div>
             <div class="display-deezer">
                 <app-deezer></app-deezer>

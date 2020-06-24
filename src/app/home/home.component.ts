@@ -27,7 +27,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         private webSocket: WebsocketService,
         private alarmService: AlarmService,
         private weatherService: WeatherService,
-        private deezerMainService: DeezerMainService) {
+        public deezerMainService: DeezerMainService) {
     }
 
     @HostBinding('style.display') display = 'block';
@@ -205,4 +205,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
         setTimeout(() => this.tick(), this.tickInterval); // reset the timer
     }
 
+    disconnect() {
+        this.deezerMainService.disconnect()
+    }
+
+    reconnect() {
+        this.deezerMainService.ensureConnected(() => {
+            console.log("Reconnected");
+        })
+    }
 }
