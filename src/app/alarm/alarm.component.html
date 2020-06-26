@@ -5,6 +5,17 @@
             <igx-switch #activate>Activer</igx-switch>
         </section>
         <section>
+            <igx-buttongroup #dayOfWeek [multiSelection]="true">
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===0? '#1b70cb' : '' }">Dim</button>
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===1? '#1b70cb' : '' }">Lun</button>
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===2? '#1b70cb' : '' }">Mar</button>
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===3? '#1b70cb' : '' }">Mer</button>
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===4? '#1b70cb' : '' }">Jeu</button>
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===5? '#1b70cb' : '' }">Ven</button>
+                <button igxButton [ngStyle]="{'background-color':selected ==='dayOfWeek' && this.dayOfWeekFocus ===6? '#1b70cb' : '' }">Sam</button>
+            </igx-buttongroup>
+        </section>
+        <section>
             <igx-time-picker [itemsDelta]="{hours:1, minutes:1}" #timePicker format="HH:mm" [mode]="mode">
                 <ng-template igxTimePickerTemplate let-openDialog="openDialog" let-value="value" let-displayTime="displayTime">
                     <igx-input-group>

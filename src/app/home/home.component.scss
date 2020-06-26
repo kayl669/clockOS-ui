@@ -65,11 +65,12 @@ svg {
 }
 
 .display-alarm {
+  display: flex;
   position: absolute;
-  left: 630px;
-  top: 50px;
-  right: 0;
-  bottom: 0;
+  left: 560px;
+  top: 30px;
+  width: 150px;
+  height: 60px;
   margin: auto;
 }
 

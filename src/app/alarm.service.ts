@@ -17,6 +17,7 @@ export class AlarmService {
 
     public setAlarm(alarm: IAlarm): Promise<any> {
         console.log('activate ' + alarm.activate);
+        console.log('dayOfWeek ' + alarm.dayOfWeek);
         console.log('hour ' + alarm.hour);
         console.log('minute ' + alarm.minute);
         console.log('volume ' + alarm.volume);

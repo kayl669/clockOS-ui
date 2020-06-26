@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
-import {IgxCarouselComponent, IgxInputDirective, IgxSwitchComponent, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
+import {IgxButtonGroupComponent, IgxCarouselComponent, IgxInputDirective, IgxSwitchComponent, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
 import {Router} from '@angular/router';
 import {WebsocketService} from '../web-socket.service';
 import {AlarmService} from '../alarm.service';
@@ -23,7 +23,9 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     public playlists: Array<{ id: number, picture: string, title: string }> = [];
     public radios: Array<{ id: string, picture: string, title: string }> = [];
     selected = 'enableToggle';
+    dayOfWeekFocus: number;
     @ViewChild('activate', {static: true}) activate: IgxSwitchComponent;
+    @ViewChild('dayOfWeek', {static: true}) dayOfWeekButtonGroup: IgxButtonGroupComponent;
     @ViewChild('timePicker', {static: true}) timePicker: IgxTimePickerComponent;
     @ViewChild('timePickerValue', {static: false}) timePickerValue: IgxInputDirective;
     @ViewChild('enableDeezer', {static: true}) enableDeezer: IgxSwitchComponent;
@@ -37,7 +39,10 @@ export class AlarmComponent implements AfterViewInit, OnInit {
         this.alarmService.getAlarm().subscribe(
             (result => {
                 this.activate.checked = result.activate;
-                const d = new Date();
+                const d = new Date()
+                for (let i = 0; i < result.dayOfWeek.length; i++) {
+                    this.dayOfWeekButtonGroup.selectButton(result.dayOfWeek[i]);
+                }
                 this.timePicker.value = new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0);
                 this.volume = result.volume;
                 this.volumeIncreaseDuration = result.volumeIncreaseDuration;
@@ -160,7 +165,14 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.selected = 'hours';
                 break;
             case 'hours':
-                this.selected = 'enableToggle';
+                this.selected = 'dayOfWeek';
+                this.dayOfWeekFocus = 6;
+                break;
+            case 'dayOfWeek':
+                if (this.dayOfWeekFocus > 0)
+                    this.dayOfWeekFocus = this.dayOfWeekFocus - 1;
+                else
+                    this.selected = 'enableToggle';
                 break;
             case 'enableToggle':
                 this.selected = this.enableDeezer.checked ? 'playlist' : 'radios';
@@ -173,7 +185,14 @@ export class AlarmComponent implements AfterViewInit, OnInit {
         switch (this.selected) {
             case 'enableToggle':
                 this.timePickerValue.nativeElement.focus();
-                this.selected = 'hours';
+                this.selected = 'dayOfWeek';
+                this.dayOfWeekFocus = 0;
+                break;
+            case 'dayOfWeek':
+                if (this.dayOfWeekFocus < 6)
+                    this.dayOfWeekFocus = this.dayOfWeekFocus + 1;
+                else
+                    this.selected = 'hours';
                 break;
             case 'hours':
                 this.timePickerValue.nativeElement.focus();
@@ -206,6 +225,12 @@ export class AlarmComponent implements AfterViewInit, OnInit {
         switch (this.selected) {
             case 'enableToggle':
                 this.activate.checked = !this.activate.checked;
+                break;
+            case 'dayOfWeek':
+                if (!this.dayOfWeekButtonGroup.buttons[this.dayOfWeekFocus].selected)
+                    this.dayOfWeekButtonGroup.selectButton(this.dayOfWeekFocus);
+                else
+                    this.dayOfWeekButtonGroup.deselectButton(this.dayOfWeekFocus);
                 break;
             case 'hours':
                 this.timePicker.scrollHourIntoView('' + (this.timePicker.value.getHours() + 1));
@@ -246,6 +271,12 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             case 'enableToggle':
                 this.activate.checked = !this.activate.checked;
                 break;
+            case 'dayOfWeek':
+                if (!this.dayOfWeekButtonGroup.buttons[this.dayOfWeekFocus].selected)
+                    this.dayOfWeekButtonGroup.selectButton(this.dayOfWeekFocus);
+                else
+                    this.dayOfWeekButtonGroup.deselectButton(this.dayOfWeekFocus);
+                break;
             case 'hours':
                 this.timePicker.scrollHourIntoView('' + (this.timePicker.value.getHours() - 1));
                 this.timePicker.okButtonClick();
@@ -281,8 +312,16 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     }
 
     private navigateOK() {
+        var dOfWeek = [];
+        for (let i = 0; i < 7; i++) {
+            if (this.dayOfWeekButtonGroup.buttons[i].selected) {
+                dOfWeek.push(i);
+            }
+        }
+        console.log(dOfWeek);
         this.alarmService.setAlarm({
             activate: this.activate.checked,
+            dayOfWeek: dOfWeek,
             hour: this.timePicker.value.getHours(),
             minute: this.timePicker.value.getMinutes(),
             volume: this.volume,

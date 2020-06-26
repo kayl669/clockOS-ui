@@ -35,7 +35,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             // Add
             //    enableKeyNavigation?:boolean;
             // to index.d.ts to make it work.
-            enableKeyNavigation: true,
+            // enableKeyNavigation: true,
             theme: 'hg-theme-default myTheme1',
             layoutName: 'default',
             layout: {
@@ -69,6 +69,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
                 keyNavigation
             ],
         });
+        this.keyboard.options.enableKeyNavigation = true;
     }
 
 

@@ -6,6 +6,17 @@
 @include igx-theme($default-palette);
 @include igx-dark-theme($default-palette);
 @import '~igniteui-angular/lib/core/styles/components/slider/slider-theme';
+@include igx-button-group(igx-button-group-theme(
+        $item-text-color: #e9fafc,
+        $item-border-color: #000,
+        $item-background: #000,
+        $item-hover-text-color: #e9fafc,
+        $item-hover-background: #000,
+        $item-selected-text-color: transparentize(#e9fafc, 0.3),
+        $item-selected-border-color: transparentize(#e9fafc, 0.3),
+        $item-selected-background: transparentize(#1b70cb, 0.3),
+        $item-selected-hover-background: transparentize(#1b70cb, 0.3)
+));
 @include igx-switch(igx-switch-theme($thumb-on-color: #e9fafc,
 $track-on-color: #1bbccb));
 @include igx-slider(igx-slider-theme(
@@ -113,8 +124,8 @@ app-status-bar {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  height: calc(100vh - 40px);
-  width: calc(100vw - 40px);
+  height: calc(100vh - 30px);
+  width: calc(100vw - 30px);
 
   &.dark {
     background: #000;

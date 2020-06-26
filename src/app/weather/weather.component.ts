@@ -33,7 +33,7 @@ export class WeatherComponent implements OnInit {
             // Add
             //    enableKeyNavigation?:boolean;
             // to index.d.ts to make it work.
-            enableKeyNavigation: true,
+            // enableKeyNavigation: true,
             theme: 'hg-theme-default myTheme1',
             layoutName: 'default',
             layout: {
@@ -65,6 +65,7 @@ export class WeatherComponent implements OnInit {
                 keyNavigation
             ],
         });
+        this.keyboard.options.enableKeyNavigation = true;
         this.webSocket.connect().subscribe((msg) => {
             switch (msg.data) {
                 case 'LEFT':  // Left button pressed

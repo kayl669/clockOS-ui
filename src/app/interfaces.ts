@@ -10,6 +10,7 @@ export interface ICurrentWeather {
 export interface IAlarm {
     activate: boolean;
     volume: number;
+    dayOfWeek: number[];
     hour: number;
     minute: number;
     volumeIncreaseDuration: number;

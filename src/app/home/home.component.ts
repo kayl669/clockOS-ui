@@ -20,6 +20,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     current: ICurrentWeather;
     private tickInterval: number = 1000; // ms
     enableAlarm: boolean = false;
+    timeAlarmDaysOfWeek: string = "";
     timeAlarm: string = "";
 
     constructor(
@@ -85,7 +86,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.alarmService.getAlarm().subscribe(result => {
             this.enableAlarm = result.activate;
             const d = new Date();
-            this.timeAlarm = moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
+            this.timeAlarmDaysOfWeek = "  ";
+            var days = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+            for (let i = 0; i < 7; i++) {
+                var day = '  ';
+                for (let j = 0; j < result.dayOfWeek.length; j++) {
+                    if (i == result.dayOfWeek[j]) {
+                        day = days[i] + ' ';
+                        break;
+                    }
+                }
+                this.timeAlarmDaysOfWeek += day;
+            }
+            this.timeAlarm = " " + moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
         })
         this.webSocket.connect().subscribe((msg) => {
             switch (msg.data) {
