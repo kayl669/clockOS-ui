@@ -1,8 +1,8 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewEncapsulation} from '@angular/core';
 import {Router} from '@angular/router';
-import {WebsocketService} from '../web-socket.service';
+import * as io from 'socket.io-client';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {IWifiConnect, IWifiScan} from "../interfaces";
+import {IConfig, IWifiConnect, IWifiScan} from "../interfaces";
 import keyNavigation from 'simple-keyboard-key-navigation';
 import Keyboard from 'simple-keyboard';
 
@@ -14,9 +14,10 @@ import Keyboard from 'simple-keyboard';
         './settings.component.scss']
 })
 export class SettingsComponent implements OnInit, AfterViewInit {
-    constructor(public router: Router, private webSocket: WebsocketService, private httpClient: HttpClient) {
+    constructor(public router: Router, private httpClient: HttpClient) {
     }
 
+    keyPadSocket;
     keyboard: Keyboard;
     displayKeyboard: boolean;
     displayStatus: boolean;
@@ -79,30 +80,32 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             this.networks = data;
             this.current = 0;
         });
-        this.webSocket.connect().subscribe((msg) => {
-            switch (msg.data) {
-                case 'LEFT':  // Left button pressed
-                    this.navigateLeft();
-                    break;
-                case 'RIGHT':  // Right button pressed
+        this.httpClient.get<IConfig>('/config').subscribe(data => {
+            console.log('Connecting to ' + data.ws);
+            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket
+                .on('connected', (data, identification) => {
+                    identification('keypad');
+                    console.log('Connected as keypad');
+                })
+                .on('RIGHT', (() => {
                     this.navigateRight();
-                    break;
-                case 'UP':  // Up button pressed
-                    this.navigateUp();
-                    break;
-                case 'DOWN':  // Down button pressed
+                }).bind(this))
+                .on('DOWN', (() => {
                     this.navigateDown();
-                    break;
-                case 'OK':  // OK button pressed
-                    this.navigateOK();
-                    break;
-                case 'SNOOZE':  // Snooze button pressed
-                    console.log('SNOOZE');
-                    break;
-                case 'STOP':  // Stop button pressed
+                }).bind(this))
+                .on('UP', (() => {
+                    this.navigateUp();
+                }).bind(this))
+                .on('STOP', (() => {
                     this.navigateStop();
-                    break;
-            }
+                }).bind(this))
+                .on('LEFT', (() => {
+                    this.navigateLeft();
+                }).bind(this))
+                .on('OK', (() => {
+                    this.navigateOK();
+                }).bind(this));
         });
     }
 
@@ -191,6 +194,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             // @ts-ignore
             this.keyboard.modules.keyNavigation.left();
         } else {
+            this.keyPadSocket.disconnect();
             this.router.navigate(['/']);
         }
     }
@@ -231,6 +235,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     }
 
     private navigateStop() {
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 
@@ -253,6 +258,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
                 });
             });
         } else {
+            this.keyPadSocket.disconnect();
             this.router.navigate(['/']);
         }
     }

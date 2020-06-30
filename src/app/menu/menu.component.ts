@@ -1,6 +1,8 @@
 import {AfterViewInit, Component, HostListener} from '@angular/core';
 import {Router} from '@angular/router';
-import {WebsocketService} from '../web-socket.service';
+import * as io from 'socket.io-client';
+import {HttpClient} from "@angular/common/http";
+import {IConfig} from "../interfaces";
 
 @Component({
     selector: 'app-menu',
@@ -8,6 +10,7 @@ import {WebsocketService} from '../web-socket.service';
     styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements AfterViewInit {
+    keyPadSocket;
     public navigationItems: { icon: string; name: string; routerLink: string }[] = [
         {
             name: 'Alarme',
@@ -37,34 +40,36 @@ export class MenuComponent implements AfterViewInit {
     ];
     public selected = 0;
 
-    constructor(public router: Router, private webSocket: WebsocketService) {
+    constructor(public router: Router, private httpClient: HttpClient) {
     }
 
     ngAfterViewInit() {
-        this.webSocket.connect().subscribe((msg) => {
-            switch (msg.data) {
-                case 'LEFT':  // Left button pressed
-                    this.navigateLeft();
-                    break;
-                case 'RIGHT':  // Right button pressed
+        this.httpClient.get<IConfig>('/config').subscribe(data => {
+            console.log('Connecting to ' + data.ws);
+            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket
+                .on('connected', (data, identification) => {
+                    identification('keypad');
+                    console.log('Connected as keypad');
+                })
+                .on('RIGHT', (() => {
                     this.navigateRight();
-                    break;
-                case 'UP':  // Up button pressed
-                    this.navigateUp();
-                    break;
-                case 'DOWN':  // Down button pressed
+                }).bind(this))
+                .on('DOWN', (() => {
                     this.navigateDown();
-                    break;
-                case 'OK':  // OK button pressed
-                    this.navigateOK();
-                    break;
-                case 'SNOOZE':  // Snooze button pressed
-                    console.log('SNOOZE');
-                    break;
-                case 'STOP':  // Stop button pressed
+                }).bind(this))
+                .on('UP', (() => {
+                    this.navigateUp();
+                }).bind(this))
+                .on('STOP', (() => {
                     this.navigateStop();
-                    break;
-            }
+                }).bind(this))
+                .on('LEFT', (() => {
+                    this.navigateLeft();
+                }).bind(this))
+                .on('OK', (() => {
+                    this.navigateOK();
+                }).bind(this));
         });
     }
 
@@ -121,10 +126,12 @@ export class MenuComponent implements AfterViewInit {
     }
 
     private navigateStop() {
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 
     navigate(routerLink) {
+        this.keyPadSocket.disconnect();
         this.router.navigate([routerLink]);
     }
 }

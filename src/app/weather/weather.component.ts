@@ -2,8 +2,10 @@ import {Component, HostListener, OnInit, ViewEncapsulation} from '@angular/core'
 import keyNavigation from 'simple-keyboard-key-navigation';
 import Keyboard from 'simple-keyboard';
 import {Router} from '@angular/router';
-import {WebsocketService} from '../web-socket.service';
+import * as io from 'socket.io-client';
 import {WeatherService} from '../weather.service';
+import {HttpClient} from "@angular/common/http";
+import {IConfig} from "../interfaces";
 
 @Component({
     selector: 'app-weather',
@@ -13,9 +15,10 @@ import {WeatherService} from '../weather.service';
         './weather.component.scss']
 })
 export class WeatherComponent implements OnInit {
-    constructor(public router: Router, private webSocket: WebsocketService, private weatherService: WeatherService) {
+    constructor(public router: Router, private httpClient: HttpClient, private weatherService: WeatherService) {
     }
 
+    keyPadSocket;
     keyboard: Keyboard;
 
     ngOnInit(): void {
@@ -66,30 +69,32 @@ export class WeatherComponent implements OnInit {
             ],
         });
         this.keyboard.options.enableKeyNavigation = true;
-        this.webSocket.connect().subscribe((msg) => {
-            switch (msg.data) {
-                case 'LEFT':  // Left button pressed
-                    this.navigateLeft();
-                    break;
-                case 'RIGHT':  // Right button pressed
+        this.httpClient.get<IConfig>('/config').subscribe(data => {
+            console.log('Connecting to ' + data.ws);
+            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket
+                .on('connected', (data, identification) => {
+                    identification('keypad');
+                    console.log('Connected as keypad');
+                })
+                .on('RIGHT', (() => {
                     this.navigateRight();
-                    break;
-                case 'UP':  // Up button pressed
-                    this.navigateUp();
-                    break;
-                case 'DOWN':  // Down button pressed
+                }).bind(this))
+                .on('DOWN', (() => {
                     this.navigateDown();
-                    break;
-                case 'OK':  // OK button pressed
-                    this.navigateOK();
-                    break;
-                case 'SNOOZE':  // Snooze button pressed
-                    console.log('SNOOZE');
-                    break;
-                case 'STOP':  // Stop button pressed
+                }).bind(this))
+                .on('UP', (() => {
+                    this.navigateUp();
+                }).bind(this))
+                .on('STOP', (() => {
                     this.navigateStop();
-                    break;
-            }
+                }).bind(this))
+                .on('LEFT', (() => {
+                    this.navigateLeft();
+                }).bind(this))
+                .on('OK', (() => {
+                    this.navigateOK();
+                }).bind(this));
         });
     }
 
@@ -147,6 +152,7 @@ export class WeatherComponent implements OnInit {
             this.handleNumbers();
         }
         if (button === '{escape}') {
+            this.keyPadSocket.disconnect();
             this.router.navigate(['/']);
         }
         if (button === '{ent}') {
@@ -199,11 +205,13 @@ export class WeatherComponent implements OnInit {
     }
 
     private navigateStop() {
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 
     private navigateEnter() {
         this.weatherService.setCity(this.keyboard.getInput());
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 }

@@ -1,11 +1,12 @@
 import {AfterViewInit, Component, HostBinding, HostListener, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import {WebsocketService} from '../web-socket.service';
 import {WeatherService} from '../weather.service';
-import {ICurrentWeather} from '../interfaces';
+import {IConfig, ICurrentWeather} from '../interfaces';
 import {AlarmService} from '../alarm.service';
 import moment from 'moment';
 import {DeezerMainService} from "../deezer-main.service";
+import {HttpClient} from "@angular/common/http";
+import * as io from 'socket.io-client';
 
 declare var $: any;
 
@@ -16,7 +17,7 @@ declare var $: any;
 })
 
 export class HomeComponent implements OnInit, AfterViewInit {
-
+    keypadSocket;
     current: ICurrentWeather;
     private tickInterval: number = 1000; // ms
     enableAlarm: boolean = false;
@@ -25,7 +26,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     constructor(
         public router: Router,
-        private webSocket: WebsocketService,
+        private httpClient: HttpClient,
         private alarmService: AlarmService,
         private weatherService: WeatherService,
         public deezerMainService: DeezerMainService) {
@@ -100,41 +101,50 @@ export class HomeComponent implements OnInit, AfterViewInit {
             }
             this.timeAlarm = " " + moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
         })
-        this.webSocket.connect().subscribe((msg) => {
-            switch (msg.data) {
-                case 'RIGHT':  // Right button pressed
+        this.httpClient.get<IConfig>('/config').subscribe(data => {
+            console.log('Connecting to ' + data.ws);
+            this.keypadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keypadSocket
+                .on('connected', (data, identification) => {
+                    identification('keypad');
+                    console.log('Connected as keypad');
+                })
+                .on('RIGHT', (() => {
                     this.navigateRight();
-                    break;
-                case 'DOWN':  // Down button pressed
+                }).bind(this))
+                .on('DOWN', (() => {
                     this.navigateDown();
-                    break;
-                case 'UP':  // Up button pressed
+                }).bind(this))
+                .on('UP', (() => {
                     this.navigateUp();
-                    break;
-                case 'SNOOZE':  // Snooze button pressed
+                }).bind(this))
+                .on('SNOOZE', (() => {
                     this.navigateSnooze();
-                    break;
-                case 'STOP':  // Stop button pressed
+                }).bind(this))
+                .on('STOP', (() => {
                     this.navigateStop();
-                    break;
-                case 'LEFT':  // Left button pressed
+                }).bind(this))
+                .on('LEFT', (() => {
                     this.navigateLeft();
-                    break;
-                case 'OK':  // OK button pressed
+                }).bind(this))
+                .on('OK', (() => {
                     this.navigateOK();
-                    break;
-            }
+                }).bind(this));
         });
     }
 
     private navigateLeft() {
+        console.log('LEFT');
     }
 
-    private navigateRight() {
+    public navigateRight() {
+        console.log('RIGHT');
+        this.keypadSocket.disconnect();
         this.router.navigate(['/menu']);
     }
 
     private navigateUp() {
+        console.log('UP');
         if (this.deezerMainService.isPlaying()) {
             var volume = this.deezerMainService.getVolume() + 10;
             if (volume > 100)
@@ -144,6 +154,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     private navigateDown() {
+        console.log('DOWN');
         if (this.deezerMainService.isPlaying()) {
             var volume = this.deezerMainService.getVolume() - 10;
             if (volume < 0)
@@ -153,6 +164,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     private navigateOK() {
+        console.log('OK');
     }
 
     private navigateStop() {

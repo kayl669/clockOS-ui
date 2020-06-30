@@ -1,8 +1,8 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {Router} from "@angular/router";
-import {WebsocketService} from "../web-socket.service";
+import * as io from 'socket.io-client';
 import {HttpClient} from "@angular/common/http";
-import {IRadio} from "../interfaces";
+import {IConfig, IRadio} from "../interfaces";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {DeezerMainService} from "../deezer-main.service";
 
@@ -12,13 +12,14 @@ import {DeezerMainService} from "../deezer-main.service";
     styleUrls: ['./radio.component.scss']
 })
 export class RadioComponent implements OnInit, AfterViewInit {
+    keyPadSocket;
     localData: any[];
     current: number;
     @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
     private socket;
 
-    constructor(public router: Router, private webSocket: WebsocketService, private httpClient: HttpClient, private deezerMainService: DeezerMainService) {
+    constructor(public router: Router, private httpClient: HttpClient, private deezerMainService: DeezerMainService) {
         this.localData = [];
     }
 
@@ -30,30 +31,32 @@ export class RadioComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        this.webSocket.connect().subscribe((msg) => {
-            switch (msg.data) {
-                case 'LEFT':  // Left button pressed
-                    this.navigateLeft();
-                    break;
-                case 'RIGHT':  // Right button pressed
+        this.httpClient.get<IConfig>('/config').subscribe(data => {
+            console.log('Connecting to ' + data.ws);
+            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket
+                .on('connected', (data, identification) => {
+                    identification('keypad');
+                    console.log('Connected as keypad');
+                })
+                .on('RIGHT', (() => {
                     this.navigateRight();
-                    break;
-                case 'UP':  // Up button pressed
-                    this.navigateUp();
-                    break;
-                case 'DOWN':  // Down button pressed
+                }).bind(this))
+                .on('DOWN', (() => {
                     this.navigateDown();
-                    break;
-                case 'OK':  // OK button pressed
-                    this.navigateOK();
-                    break;
-                case 'SNOOZE':  // Snooze button pressed
-                    console.log('SNOOZE');
-                    break;
-                case 'STOP':  // Stop button pressed
+                }).bind(this))
+                .on('UP', (() => {
+                    this.navigateUp();
+                }).bind(this))
+                .on('STOP', (() => {
                     this.navigateStop();
-                    break;
-            }
+                }).bind(this))
+                .on('LEFT', (() => {
+                    this.navigateLeft();
+                }).bind(this))
+                .on('OK', (() => {
+                    this.navigateOK();
+                }).bind(this));
         });
         this.httpClient.get<IRadio[]>("https://de1.api.radio-browser.info/json/stations/search?countrycode=FR&language=fr&limit=30&order=clickcount&reverse=true").subscribe(data => {
             console.log(data);
@@ -96,6 +99,7 @@ export class RadioComponent implements OnInit, AfterViewInit {
     }
 
     private navigateLeft() {
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 
@@ -127,10 +131,12 @@ export class RadioComponent implements OnInit, AfterViewInit {
         this.socket.emit('radio', {
             stationuuid: this.localData[this.current].stationuuid
         });
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 
     private navigateStop() {
+        this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }
 

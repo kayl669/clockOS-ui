@@ -14,7 +14,6 @@ import {MenuComponent} from './menu/menu.component';
 import {StatusBarComponent} from './status-bar/status-bar.component';
 import {SettingsComponent} from './settings/settings.component';
 import {registerLocaleData} from '@angular/common';
-import {WebsocketService} from './web-socket.service';
 import {
     IgxAvatarModule,
     IgxButtonModule,
@@ -85,7 +84,7 @@ import {AudioService} from './audio.service';
         IgxSelectModule,
         IgxCarouselModule
     ],
-    providers: [WebsocketService, WeatherService, DeezerMainService, AudioService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
+    providers: [WeatherService, DeezerMainService, AudioService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
     bootstrap: [AppComponent]
 })
 export class AppModule {

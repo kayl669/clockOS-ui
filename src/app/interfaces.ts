@@ -25,7 +25,6 @@ export interface ICity {
 }
 
 export interface IConfig {
-    api: string;
     openWeatherAppId: string;
     deezerAppId: string;
     server: string;

@@ -1,10 +1,10 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {IgxButtonGroupComponent, IgxCarouselComponent, IgxInputDirective, IgxSwitchComponent, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
 import {Router} from '@angular/router';
-import {WebsocketService} from '../web-socket.service';
+import * as io from 'socket.io-client';
 import {AlarmService} from '../alarm.service';
 import {DeezerMainService} from "../deezer-main.service";
-import {IRadio} from "../interfaces";
+import {IConfig, IRadio} from "../interfaces";
 import {HttpClient} from "@angular/common/http";
 import DZ = DeezerSdk.DZ;
 
@@ -14,6 +14,7 @@ import DZ = DeezerSdk.DZ;
     styleUrls: ['./alarm.component.scss']
 })
 export class AlarmComponent implements AfterViewInit, OnInit {
+    keypadSocket;
     public mode: InteractionMode = InteractionMode.DropDown;
     volume;
     volumeIncreaseDuration;
@@ -32,7 +33,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     @ViewChild("playlistSelect", {static: false}) public playlistSelect: IgxCarouselComponent;
     @ViewChild("radioSelect", {static: false}) public radioSelect: IgxCarouselComponent;
 
-    constructor(public router: Router, private webSocket: WebsocketService, private alarmService: AlarmService, private deezerMainService: DeezerMainService, private httpClient: HttpClient) {
+    constructor(public router: Router, private alarmService: AlarmService, private deezerMainService: DeezerMainService, private httpClient: HttpClient) {
     }
 
     ngOnInit(): void {
@@ -81,30 +82,31 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit() {
-        this.webSocket.connect().subscribe((msg) => {
-            switch (msg.data) {
-                case 'LEFT':  // Left button pressed
-                    this.navigateLeft();
-                    break;
-                case 'RIGHT':  // Right button pressed
+        this.httpClient.get<IConfig>('/config').subscribe(data => {
+            console.log('Connecting to ' + data.ws);
+            this.keypadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keypadSocket.on('connected', (data, identification) => {
+                identification('keypad');
+                console.log('Connected as keypad');
+            })
+                .on('RIGHT', (() => {
                     this.navigateRight();
-                    break;
-                case 'UP':  // Up button pressed
-                    this.navigateUp();
-                    break;
-                case 'DOWN':  // Down button pressed
+                }).bind(this))
+                .on('DOWN', (() => {
                     this.navigateDown();
-                    break;
-                case 'OK':  // OK button pressed
-                    this.navigateOK();
-                    break;
-                case 'SNOOZE':  // Snooze button pressed
-                    console.log('SNOOZE');
-                    break;
-                case 'STOP':  // Stop button pressed
+                }).bind(this))
+                .on('UP', (() => {
+                    this.navigateUp();
+                }).bind(this))
+                .on('STOP', (() => {
                     this.navigateStop();
-                    break;
-            }
+                }).bind(this))
+                .on('LEFT', (() => {
+                    this.navigateLeft();
+                }).bind(this))
+                .on('OK', (() => {
+                    this.navigateOK();
+                }).bind(this));
         });
     }
 
@@ -331,11 +333,13 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             playlist: this.enableDeezer.checked ? this.playlists[this.playlistCurrentIndex].id : 0,
             stationuuid: this.enableDeezer.checked ? '' : this.radios[this.radioCurrentIndex].id
         }).then(() => {
+            this.keypadSocket.disconnect();
             this.router.navigate(['/']);
         });
     }
 
     private navigateStop() {
+        this.keypadSocket.disconnect();
         this.router.navigate(['/']);
     }
 
