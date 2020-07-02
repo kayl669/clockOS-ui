@@ -1,11 +1,10 @@
 import {AfterViewInit, Component, HostBinding, HostListener, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {WeatherService} from '../weather.service';
-import {IConfig, ICurrentWeather} from '../interfaces';
+import {ICurrentWeather} from '../interfaces';
 import {AlarmService} from '../alarm.service';
 import moment from 'moment';
 import {DeezerMainService} from "../deezer-main.service";
-import {HttpClient} from "@angular/common/http";
 import * as io from 'socket.io-client';
 
 declare var $: any;
@@ -26,7 +25,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     constructor(
         public router: Router,
-        private httpClient: HttpClient,
         private alarmService: AlarmService,
         private weatherService: WeatherService,
         public deezerMainService: DeezerMainService) {
@@ -101,36 +99,33 @@ export class HomeComponent implements OnInit, AfterViewInit {
             }
             this.timeAlarm = " " + moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
         })
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keypadSocket = io.connect(data.ws, {rejectUnauthorized: false});
-            this.keypadSocket
-                .on('connected', (data, identification) => {
-                    identification('keypad');
-                    console.log('Connected as keypad');
-                })
-                .on('RIGHT', (() => {
-                    this.navigateRight();
-                }).bind(this))
-                .on('DOWN', (() => {
-                    this.navigateDown();
-                }).bind(this))
-                .on('UP', (() => {
-                    this.navigateUp();
-                }).bind(this))
-                .on('SNOOZE', (() => {
-                    this.navigateSnooze();
-                }).bind(this))
-                .on('STOP', (() => {
-                    this.navigateStop();
-                }).bind(this))
-                .on('LEFT', (() => {
-                    this.navigateLeft();
-                }).bind(this))
-                .on('OK', (() => {
-                    this.navigateOK();
-                }).bind(this));
-        });
+        this.keypadSocket = io.connect("/", {rejectUnauthorized: false});
+        this.keypadSocket
+            .on('connected', (data, identification) => {
+                identification('keypad');
+                console.log('Connected as keypad');
+            })
+            .on('RIGHT', (() => {
+                this.navigateRight();
+            }).bind(this))
+            .on('DOWN', (() => {
+                this.navigateDown();
+            }).bind(this))
+            .on('UP', (() => {
+                this.navigateUp();
+            }).bind(this))
+            .on('SNOOZE', (() => {
+                this.navigateSnooze();
+            }).bind(this))
+            .on('STOP', (() => {
+                this.navigateStop();
+            }).bind(this))
+            .on('LEFT', (() => {
+                this.navigateLeft();
+            }).bind(this))
+            .on('OK', (() => {
+                this.navigateOK();
+            }).bind(this));
     }
 
     private navigateLeft() {
@@ -235,7 +230,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     reconnect() {
-        this.deezerMainService.ensureConnected(() => {
+        this.deezerMainService.ensureDeezerConnected(() => {
             console.log("Reconnected");
         })
     }

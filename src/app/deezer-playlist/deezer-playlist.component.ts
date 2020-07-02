@@ -3,8 +3,6 @@ import {DeezerMainService} from "../deezer-main.service";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {Router} from "@angular/router";
 import * as io from 'socket.io-client';
-import {IConfig} from "../interfaces";
-import {HttpClient} from "@angular/common/http";
 import DZ = DeezerSdk.DZ;
 
 @Component({
@@ -20,38 +18,35 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     public grid1: IgxGridComponent;
     private socket;
 
-    constructor(public router: Router, private httpClient: HttpClient, private deezerMainService: DeezerMainService) {
+    constructor(public router: Router, private deezerMainService: DeezerMainService) {
         this.localData = [];
     }
 
     ngOnInit(): void {
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
-            this.keyPadSocket
-                .on('connected', (data, identification) => {
-                    identification('keypad');
-                    console.log('Connected as keypad');
-                })
-                .on('RIGHT', (() => {
-                    this.navigateRight();
-                }).bind(this))
-                .on('DOWN', (() => {
-                    this.navigateDown();
-                }).bind(this))
-                .on('UP', (() => {
-                    this.navigateUp();
-                }).bind(this))
-                .on('STOP', (() => {
-                    this.navigateStop();
-                }).bind(this))
-                .on('LEFT', (() => {
-                    this.navigateLeft();
-                }).bind(this))
-                .on('OK', (() => {
-                    this.navigateOK();
-                }).bind(this));
-        });
+        this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
+        this.keyPadSocket
+            .on('connected', (data, identification) => {
+                identification('keypad');
+                console.log('Connected as keypad');
+            })
+            .on('RIGHT', (() => {
+                this.navigateRight();
+            }).bind(this))
+            .on('DOWN', (() => {
+                this.navigateDown();
+            }).bind(this))
+            .on('UP', (() => {
+                this.navigateUp();
+            }).bind(this))
+            .on('STOP', (() => {
+                this.navigateStop();
+            }).bind(this))
+            .on('LEFT', (() => {
+                this.navigateLeft();
+            }).bind(this))
+            .on('OK', (() => {
+                this.navigateOK();
+            }).bind(this));
     }
 
     @HostListener('document:keydown', ['$event'])
@@ -87,7 +82,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         // @ts-ignore
-        this.deezerMainService.ensureConnected((msg, socket) => {
+        this.deezerMainService.ensureDeezerConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
             DZ.api('/user/me/playlists', (response) => {

@@ -2,7 +2,7 @@ import {AfterViewInit, Component, HostListener, OnInit, ViewEncapsulation} from 
 import {Router} from '@angular/router';
 import * as io from 'socket.io-client';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {IConfig, IWifiConnect, IWifiScan} from "../interfaces";
+import {IWifiConnect, IWifiScan} from "../interfaces";
 import keyNavigation from 'simple-keyboard-key-navigation';
 import Keyboard from 'simple-keyboard';
 
@@ -80,9 +80,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             this.networks = data;
             this.current = 0;
         });
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
             this.keyPadSocket
                 .on('connected', (data, identification) => {
                     identification('keypad');
@@ -106,7 +104,6 @@ export class SettingsComponent implements OnInit, AfterViewInit {
                 .on('OK', (() => {
                     this.navigateOK();
                 }).bind(this));
-        });
     }
 
     @HostListener('document:keydown', ['$event'])

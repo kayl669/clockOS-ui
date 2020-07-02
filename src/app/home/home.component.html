@@ -61,8 +61,8 @@
                 <igx-icon (click)="this.navigateRight();">list</igx-icon>
             </div>
             <div class="display-music">
-                <igx-icon *ngIf="this.deezerMainService.connected" (click)="this.disconnect()">music_note</igx-icon>
-                <igx-icon *ngIf="!this.deezerMainService.connected" (click)="this.reconnect()">music_off</igx-icon>
+                <igx-icon *ngIf="this.deezerMainService.deezerConnected" (click)="this.disconnect()">music_note</igx-icon>
+                <igx-icon *ngIf="!this.deezerMainService.deezerConnected" (click)="this.reconnect()">music_off</igx-icon>
             </div>
             <div class="display-icon"><i class="wi" [ngClass]="current.image"></i></div>
             <div class="display-deezer">

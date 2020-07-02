@@ -1,8 +1,6 @@
 import {AfterViewInit, Component, HostListener} from '@angular/core';
 import {Router} from '@angular/router';
 import * as io from 'socket.io-client';
-import {HttpClient} from "@angular/common/http";
-import {IConfig} from "../interfaces";
 
 @Component({
     selector: 'app-menu',
@@ -40,13 +38,11 @@ export class MenuComponent implements AfterViewInit {
     ];
     public selected = 0;
 
-    constructor(public router: Router, private httpClient: HttpClient) {
+    constructor(public router: Router) {
     }
 
     ngAfterViewInit() {
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
             this.keyPadSocket
                 .on('connected', (data, identification) => {
                     identification('keypad');
@@ -70,7 +66,6 @@ export class MenuComponent implements AfterViewInit {
                 .on('OK', (() => {
                     this.navigateOK();
                 }).bind(this));
-        });
     }
 
     @HostListener('document:keydown', ['$event'])

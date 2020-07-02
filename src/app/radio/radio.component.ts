@@ -2,7 +2,7 @@ import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angula
 import {Router} from "@angular/router";
 import * as io from 'socket.io-client';
 import {HttpClient} from "@angular/common/http";
-import {IConfig, IRadio} from "../interfaces";
+import {IRadio} from "../interfaces";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {DeezerMainService} from "../deezer-main.service";
 
@@ -31,33 +31,30 @@ export class RadioComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
-            this.keyPadSocket
-                .on('connected', (data, identification) => {
-                    identification('keypad');
-                    console.log('Connected as keypad');
-                })
-                .on('RIGHT', (() => {
-                    this.navigateRight();
-                }).bind(this))
-                .on('DOWN', (() => {
-                    this.navigateDown();
-                }).bind(this))
-                .on('UP', (() => {
-                    this.navigateUp();
-                }).bind(this))
-                .on('STOP', (() => {
-                    this.navigateStop();
-                }).bind(this))
-                .on('LEFT', (() => {
-                    this.navigateLeft();
-                }).bind(this))
-                .on('OK', (() => {
-                    this.navigateOK();
-                }).bind(this));
-        });
+        this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
+        this.keyPadSocket
+            .on('connected', (data, identification) => {
+                identification('keypad');
+                console.log('Connected as keypad');
+            })
+            .on('RIGHT', (() => {
+                this.navigateRight();
+            }).bind(this))
+            .on('DOWN', (() => {
+                this.navigateDown();
+            }).bind(this))
+            .on('UP', (() => {
+                this.navigateUp();
+            }).bind(this))
+            .on('STOP', (() => {
+                this.navigateStop();
+            }).bind(this))
+            .on('LEFT', (() => {
+                this.navigateLeft();
+            }).bind(this))
+            .on('OK', (() => {
+                this.navigateOK();
+            }).bind(this));
         this.httpClient.get<IRadio[]>("https://de1.api.radio-browser.info/json/stations/search?countrycode=FR&language=fr&limit=30&order=clickcount&reverse=true").subscribe(data => {
             console.log(data);
             this.localData = data;

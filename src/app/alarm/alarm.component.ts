@@ -4,7 +4,7 @@ import {Router} from '@angular/router';
 import * as io from 'socket.io-client';
 import {AlarmService} from '../alarm.service';
 import {DeezerMainService} from "../deezer-main.service";
-import {IConfig, IRadio} from "../interfaces";
+import {IRadio} from "../interfaces";
 import {HttpClient} from "@angular/common/http";
 import DZ = DeezerSdk.DZ;
 
@@ -49,7 +49,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.volumeIncreaseDuration = result.volumeIncreaseDuration;
                 this.snoozeAfter = result.snoozeAfter;
                 // @ts-ignore
-                this.deezerMainService.ensureConnected(((msg, socket) => {
+                this.deezerMainService.ensureDeezerConnected(((msg, socket) => {
                     console.log(msg);
                     DZ.api('/user/me/playlists', (response) => {
                         this.playlists = [];
@@ -82,32 +82,29 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit() {
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keypadSocket = io.connect(data.ws, {rejectUnauthorized: false});
-            this.keypadSocket.on('connected', (data, identification) => {
-                identification('keypad');
-                console.log('Connected as keypad');
-            })
-                .on('RIGHT', (() => {
-                    this.navigateRight();
-                }).bind(this))
-                .on('DOWN', (() => {
-                    this.navigateDown();
-                }).bind(this))
-                .on('UP', (() => {
-                    this.navigateUp();
-                }).bind(this))
-                .on('STOP', (() => {
-                    this.navigateStop();
-                }).bind(this))
-                .on('LEFT', (() => {
-                    this.navigateLeft();
-                }).bind(this))
-                .on('OK', (() => {
-                    this.navigateOK();
-                }).bind(this));
-        });
+        this.keypadSocket = io.connect("/", {rejectUnauthorized: false});
+        this.keypadSocket.on('connected', (data, identification) => {
+            identification('keypad');
+            console.log('Connected as keypad');
+        })
+            .on('RIGHT', (() => {
+                this.navigateRight();
+            }).bind(this))
+            .on('DOWN', (() => {
+                this.navigateDown();
+            }).bind(this))
+            .on('UP', (() => {
+                this.navigateUp();
+            }).bind(this))
+            .on('STOP', (() => {
+                this.navigateStop();
+            }).bind(this))
+            .on('LEFT', (() => {
+                this.navigateLeft();
+            }).bind(this))
+            .on('OK', (() => {
+                this.navigateOK();
+            }).bind(this));
     }
 
     @HostListener('document:keydown', ['$event'])

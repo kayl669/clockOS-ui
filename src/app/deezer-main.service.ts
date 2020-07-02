@@ -16,12 +16,13 @@ import SdkOptions = DeezerSdk.SdkOptions;
 })
 export class DeezerMainService {
     connected: boolean;
+    deezerConnected: boolean;
     deezerAppId;
     server;
     socket;
     queue = [];
     trackId;
-    stationuuid;
+    stationuuid: string;
     currentTrack: Track;
     lastPosition = 0; // last position of the track
     musicStatus = 'stop';
@@ -32,38 +33,54 @@ export class DeezerMainService {
 
     constructor(private scriptService: ScriptService, private httpClient: HttpClient, private audioService: AudioService) {
         this.connected = false;
+        this.deezerConnected = false;
     }
 
     ensureConnected(callback) {
         let myCallback = callback;
         if (!this.connected) {
-            this.httpClient.get<IConfig>('/config').toPromise().then(function (data) {
+            console.log("Connecting to backend");
+            this.httpClient.get<IConfig>('/config').toPromise().then(((data) => {
                 this.deezerAppId = data.deezerAppId;
                 this.server = data.server;
-                this.socket = io.connect(data.ws, {rejectUnauthorized: false});
-                this.socket.on('connected', (data, identification) => {
+                this.socket = io.connect("/", {rejectUnauthorized: false});
+                this.socket.on('connected', ((data, identification) => {
                     identification('player');
-                });
-            }.bind(this)).then((() => {
+                    this.connected = true;
+                    this.player();
+                    myCallback('Connected as player', this.socket);
+                }).bind(this));
+            }).bind(this));
+            return;
+        }
+        myCallback('Already as player', this.socket);
+    }
+
+    ensureDeezerConnected(callback) {
+        let myCallback = callback;
+        this.ensureConnected(() => {
+            if (!this.deezerConnected) {
                 return this.scriptService.loadScript('https://e-cdns-files.dzcdn.net/js/min/dz.js').toPromise().then((() => {
+                    console.log("Connecting to deezer");
                     DZ.init({
                         appId: this.deezerAppId, // Your app id
                         channelUrl: this.server + '/channel.html',
                         player: {
                             onload: ((state: PlayerState) => {
+                                console.log(state);
                                 DZ.login(((res: LoginResponse) => {
                                     console.log('userID ', res.userID);
                                     console.log('status ', res.status);
                                     console.log('accessToken ', res.authResponse.accessToken);
                                     console.log('expire ', res.authResponse.expire);
                                     if (res.authResponse) {
-                                        this.player();
                                         DZ.api('/user/me', ((response) => {
                                             if (!response.name) {
                                                 this.disconnect();
                                                 return;
                                             }
-                                            this.connected = true;
+                                            this.deezerConnected = true;
+                                            this.deezerEvent();
                                             myCallback('Welcome ' + response.name, this.socket, DZ);
                                         }).bind(this));
                                     } else {
@@ -74,25 +91,30 @@ export class DeezerMainService {
                         }
                     });
                 }).bind(this));
+                return;
+            }
+            DZ.ready(((sdkOptions: SdkOptions) => {
+                DZ.api('/user/me', ((response) => {
+                    myCallback('Already connect ' + response.name, this.socket, DZ);
+                }).bind(this));
             }).bind(this));
-            return;
-        }
-        DZ.ready(((sdkOptions: SdkOptions) => {
-            DZ.api('/user/me', ((response) => {
-                myCallback('Already connect ' + response.name, this.socket, DZ);
-            }).bind(this));
-        }).bind(this));
+        });
     }
 
     disconnect() {
-        DZ.logout()
+        if (this.deezerConnected) {
+            DZ.logout();
+        }
         this.server = null;
         this.socket = null;
         this.connected = false;
+        this.deezerConnected = false;
     }
 
     updateInfos(data) {
-        if ((data.musicStatus === 'playing' || data.musicStatus === 'pause') && data.queue[0]) {
+        console.log(data);
+        this.stationuuid = data.stationuuid;
+        if (this.deezerConnected && ((data.musicStatus === 'playing' || data.musicStatus === 'pause') && data.queue[0])) {
             DZ.api('/track/' + data.queue[0], (response) => {
                 this.title = response.title;
                 if (response.album != null) {
@@ -116,11 +138,14 @@ export class DeezerMainService {
         }
     }
 
-    playRadio(stationuuid) {
-        DZ.player.pause();
+    playRadio(stationuuid:string) {
+        if (this.deezerConnected) {
+            DZ.player.pause();
+        }
         this.audioService.stop();
         console.log('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid);
         this.httpClient.get<IRadio>('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid).subscribe(data => {
+            console.log(data);
             console.log(data[0].stationuuid);
             console.log(data[0].url);
             console.log(data[0].name);
@@ -138,7 +163,7 @@ export class DeezerMainService {
     }
 
     isPlaying() {
-        return DZ.player.isPlaying() || this.audioService.isPlaying();
+        return (this.deezerConnected && DZ.player.isPlaying()) || this.audioService.isPlaying();
     }
 
     stop() {
@@ -146,7 +171,7 @@ export class DeezerMainService {
     }
 
     setVolume(volume: number) {
-        if (DZ.player.isPlaying()) {
+        if (this.deezerConnected && DZ.player.isPlaying()) {
             DZ.player.setVolume(volume);
         } else if (this.audioService.isPlaying()) {
             this.audioService.setVolume(volume);
@@ -154,7 +179,7 @@ export class DeezerMainService {
     }
 
     getVolume() {
-        if (DZ.player.isPlaying()) {
+        if (this.deezerConnected && DZ.player.isPlaying()) {
             return DZ.player.getVolume();
         }
         if (this.audioService.isPlaying()) {
@@ -165,9 +190,12 @@ export class DeezerMainService {
 
     player() {
         // Play a track
-        this.socket.on('track', (trackId) => {
+        this.socket.on('track', ((trackId) => {
             console.log('Play track', trackId);
-
+            if (!this.deezerConnected) {
+                console.log('Cannot play track', trackId, 'not connected');
+                return
+            }
             DZ.player.playTracks([trackId], true, 0, (response) => {
                 console.log(response);
                 this.trackId = response.tracks[0].id;
@@ -179,13 +207,17 @@ export class DeezerMainService {
                 console.log(response.tracks[0].album.title);
                 console.log(response.tracks[0].album.id);
             });
-        });
-        this.socket.on('playlist', (playlist) => {
+        }).bind(this));
+        this.socket.on('playlist', ((playlist) => {
             console.log('playlist ', playlist);
             var tracks = [];
             var shuffledTracks = [];
             this.stationuuid = '';
             this.audioService.stop();
+            if (!this.deezerConnected) {
+                console.log('Cannot play playlist', playlist, 'not connected');
+                return
+            }
             DZ.player.playPlaylist(playlist.playlist, false, 0, (response) => {
                 for (let i = 0; i < response.tracks.length; i++) {
                     tracks.push(response.tracks[i]);
@@ -199,14 +231,15 @@ export class DeezerMainService {
                     this.socket.emit('tracks', shuffledTracks);
                 });
             });
-        });
+        }).bind(this));
 
-        this.socket.on('radio', (radio) => {
+        this.socket.on('radio', ((radio) => {
+            console.log("Let's play ", radio.stationuuid);
             this.playRadio(radio.stationuuid);
-        });
+        }).bind(this));
 
         // What is the current track
-        this.socket.on('isCurrent', () => {
+        this.socket.on('isCurrent', (() => {
             console.log('isCurrent');
             if (this.currentTrack != null) {
                 this.socket.emit('current', {
@@ -221,19 +254,22 @@ export class DeezerMainService {
                     musicStatus: this.musicStatus
                 });
             }
-        });
+        }).bind(this));
 
         // Basic Commands
 
         // Play
-        this.socket.on('play', () => {
-            console.log('Let s play ', this.stationuuid);
+        this.socket.on('play', (() => {
             if (this.stationuuid !== '') {
                 this.playRadio(this.stationuuid);
             } else {
                 this.audioService.stop();
                 if (this.musicStatus == 'stop') {
                     if (this.queue.length > 0) {
+                        if (!this.deezerConnected) {
+                            console.log('Cannot play not connected');
+                            return
+                        }
                         // If no track loaded, play the first in the queue
                         DZ.player.playTracks(this.queue[0], true, 0, (response) => {
                             this.queue.splice(0, 1);
@@ -241,45 +277,58 @@ export class DeezerMainService {
                         });
                     }
                 } else {
+                    if (!this.deezerConnected) {
+                        console.log('Cannot play not connected');
+                        return
+                    }
                     DZ.player.play();
                 }
             }
-        });
+        }).bind(this));
         // Pause
-        this.socket.on('pause', () => {
+        this.socket.on('pause', (() => {
             console.log('pause');
             this.audioService.pause();
-            DZ.player.pause();
+            if (this.deezerConnected) {
+                DZ.player.pause();
+            }
             this.socket.emit('musicStatus', 'pause');
-        });
+        }).bind(this));
         // Stop
-        this.socket.on('stop', () => {
+        this.socket.on('stop', (() => {
             console.log('stop');
             if (this.audioService.isPlaying()) {
                 this.audioService.stop();
-            } else if (DZ.player.isPlaying())
+            } else if (this.deezerConnected && DZ.player.isPlaying())
                 DZ.player.pause();
             this.musicStatus = 'stop';
             this.socket.emit('musicStatus', 'stop');
-        });
+        }).bind(this));
 
         // Volume
-        this.socket.on('volume', (vol) => {
+        this.socket.on('volume', ((vol) => {
             console.log('volume', vol);
-            this.audioService.setVolume(vol);
-            DZ.player.setVolume(vol);
-        });
+            this.setVolume(vol);
+        }).bind(this));
 
         // Seek
-        this.socket.on('seek', (position) => {
+        this.socket.on('seek', ((position) => {
             console.log('seek', position);
-            DZ.player.seek(position);
-        });
+            if (this.deezerConnected) {
+                DZ.player.seek(position);
+            }
+        }).bind(this));
 
+        this.socket.on('infos', ((data) => {
+            this.updateInfos(data);
+        }).bind(this));
+    }
+
+    deezerEvent() {
         // Listen for player's events
 
         // Playing, player_position change, we use it to determine if the track is ended
-        DZ.Event.subscribe('player_position', (time) => {
+        DZ.Event.subscribe('player_position', ((time) => {
             /**
              * time = [currentTime, totalTime];
              */
@@ -293,20 +342,20 @@ export class DeezerMainService {
             }
 
             this.lastPosition = time[0];
-        });
+        }).bind(this));
 
-        DZ.Event.subscribe('player_play', () => {
+        DZ.Event.subscribe('player_play', (() => {
             this.socket.emit('musicStatus', 'playing');
             this.musicStatus = 'playing';
-        });
+        }).bind(this));
 
-        DZ.Event.subscribe('player_paused', () => {
+        DZ.Event.subscribe('player_paused', (() => {
             this.socket.emit('musicStatus', 'pause');
             this.musicStatus = 'pause';
-        });
+        }).bind(this));
 
         // Fired when a new track starts
-        DZ.Event.subscribe('current_track', (track) => {
+        DZ.Event.subscribe('current_track', ((track) => {
             console.log('current_track id           ' + track.track.id);
             console.log('current_track album id     ' + track.track.album.id);
             console.log('current_track album title  ' + track.track.album.title);
@@ -319,9 +368,6 @@ export class DeezerMainService {
                 musicStatus: this.musicStatus
             });
             this.currentTrack = track.track;
-        });
-        this.socket.on('infos', ((data) => {
-            this.updateInfos(data);
         }).bind(this));
     }
 }

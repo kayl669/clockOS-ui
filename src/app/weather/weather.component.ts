@@ -4,8 +4,6 @@ import Keyboard from 'simple-keyboard';
 import {Router} from '@angular/router';
 import * as io from 'socket.io-client';
 import {WeatherService} from '../weather.service';
-import {HttpClient} from "@angular/common/http";
-import {IConfig} from "../interfaces";
 
 @Component({
     selector: 'app-weather',
@@ -15,7 +13,7 @@ import {IConfig} from "../interfaces";
         './weather.component.scss']
 })
 export class WeatherComponent implements OnInit {
-    constructor(public router: Router, private httpClient: HttpClient, private weatherService: WeatherService) {
+    constructor(public router: Router, private weatherService: WeatherService) {
     }
 
     keyPadSocket;
@@ -69,9 +67,7 @@ export class WeatherComponent implements OnInit {
             ],
         });
         this.keyboard.options.enableKeyNavigation = true;
-        this.httpClient.get<IConfig>('/config').subscribe(data => {
-            console.log('Connecting to ' + data.ws);
-            this.keyPadSocket = io.connect(data.ws, {rejectUnauthorized: false});
+            this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
             this.keyPadSocket
                 .on('connected', (data, identification) => {
                     identification('keypad');
@@ -95,7 +91,6 @@ export class WeatherComponent implements OnInit {
                 .on('OK', (() => {
                     this.navigateOK();
                 }).bind(this));
-        });
     }
 
     @HostListener('document:keydown', ['$event'])

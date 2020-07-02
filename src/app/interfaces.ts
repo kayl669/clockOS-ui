@@ -28,7 +28,6 @@ export interface IConfig {
     openWeatherAppId: string;
     deezerAppId: string;
     server: string;
-    ws: string;
 }
 
 export interface IWifiScan {

@@ -16,13 +16,16 @@ export class DeezerComponent implements AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        // noinspection JSUnusedLocalSymbols
         this.deezerMainComponent.ensureConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
+            this.deezerMainComponent.ensureDeezerConnected((msg, socket) => {
+                console.log(msg);
+                this.socket = socket;
 
-            this.socket.on('musicPosition', (position) => {
-                this.updatePosition(position);
+                this.socket.on('musicPosition', (position) => {
+                    this.updatePosition(position);
+                });
             });
         });
     }
