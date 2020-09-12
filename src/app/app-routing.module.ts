@@ -5,7 +5,7 @@ import {MenuComponent} from './menu/menu.component';
 import {SettingsComponent} from './settings/settings.component';
 import {AlarmComponent} from './alarm/alarm.component';
 import {WeatherComponent} from './weather/weather.component';
-import {DeezerPlaylistComponent} from "./deezer-playlist/deezer-playlist.component";
+import {PlaylistComponent} from "./playlist/playlist.component";
 import {RadioComponent} from "./radio/radio.component";
 
 const appRoutes: Routes = [
@@ -31,7 +31,7 @@ const appRoutes: Routes = [
     },
     {
         path: 'playlists',
-        component: DeezerPlaylistComponent,
+        component: PlaylistComponent,
         data: {preload: true}
     },
     {

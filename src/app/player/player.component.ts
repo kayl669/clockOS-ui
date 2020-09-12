@@ -1,25 +1,25 @@
 import {AfterViewInit, Component} from '@angular/core';
-import {DeezerMainService} from "../deezer-main.service";
+import {PlayerMainService} from "../player-main.service";
 
 
 @Component({
-    selector: 'app-deezer',
-    templateUrl: './deezer.component.html',
-    styleUrls: ['./deezer.component.scss']
+    selector: 'app-player',
+    templateUrl: './player.component.html',
+    styleUrls: ['./player.component.scss']
 })
-export class DeezerComponent implements AfterViewInit {
+export class PlayerComponent implements AfterViewInit {
     socket;
     position;
 
 
-    constructor(public deezerMainComponent: DeezerMainService) {
+    constructor(public playerMainService: PlayerMainService) {
     }
 
     ngAfterViewInit(): void {
-        this.deezerMainComponent.ensureConnected((msg, socket) => {
+        this.playerMainService.ensureConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
-            this.deezerMainComponent.ensureDeezerConnected((msg, socket) => {
+            this.playerMainService.ensurePlayerConnected((msg, socket) => {
                 console.log(msg);
                 this.socket = socket;
 

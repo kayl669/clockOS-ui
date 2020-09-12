@@ -14,9 +14,9 @@ import SdkOptions = DeezerSdk.SdkOptions;
 @Injectable({
     providedIn: 'root',
 })
-export class DeezerMainService {
+export class PlayerMainService {
     connected: boolean;
-    deezerConnected: boolean;
+    playerConnected: boolean;
     deezerAppId;
     server;
     socket;
@@ -33,7 +33,7 @@ export class DeezerMainService {
 
     constructor(private scriptService: ScriptService, private httpClient: HttpClient, private audioService: AudioService) {
         this.connected = false;
-        this.deezerConnected = false;
+        this.playerConnected = false;
     }
 
     ensureConnected(callback) {
@@ -56,10 +56,10 @@ export class DeezerMainService {
         myCallback('Already as player', this.socket);
     }
 
-    ensureDeezerConnected(callback) {
+    ensurePlayerConnected(callback) {
         let myCallback = callback;
         this.ensureConnected(() => {
-            if (!this.deezerConnected) {
+            if (!this.playerConnected) {
                 return this.scriptService.loadScript('https://e-cdns-files.dzcdn.net/js/min/dz.js').toPromise().then((() => {
                     console.log("Connecting to deezer");
                     DZ.init({
@@ -79,8 +79,8 @@ export class DeezerMainService {
                                                 this.disconnect();
                                                 return;
                                             }
-                                            this.deezerConnected = true;
-                                            this.deezerEvent();
+                                            this.playerConnected = true;
+                                            this.playerEvent();
                                             myCallback('Welcome ' + response.name, this.socket, DZ);
                                         }).bind(this));
                                     } else {
@@ -102,19 +102,19 @@ export class DeezerMainService {
     }
 
     disconnect() {
-        if (this.deezerConnected) {
+        if (this.playerConnected) {
             DZ.logout();
         }
         this.server = null;
         this.socket = null;
         this.connected = false;
-        this.deezerConnected = false;
+        this.playerConnected = false;
     }
 
     updateInfos(data) {
         console.log(data);
         this.stationuuid = data.stationuuid;
-        if (this.deezerConnected && ((data.musicStatus === 'playing' || data.musicStatus === 'pause') && data.queue[0])) {
+        if (this.playerConnected && ((data.musicStatus === 'playing' || data.musicStatus === 'pause') && data.queue[0])) {
             DZ.api('/track/' + data.queue[0], (response) => {
                 this.title = response.title;
                 if (response.album != null) {
@@ -139,7 +139,7 @@ export class DeezerMainService {
     }
 
     playRadio(stationuuid:string) {
-        if (this.deezerConnected) {
+        if (this.playerConnected) {
             DZ.player.pause();
         }
         this.audioService.stop();
@@ -163,7 +163,7 @@ export class DeezerMainService {
     }
 
     isPlaying() {
-        return (this.deezerConnected && DZ.player.isPlaying()) || this.audioService.isPlaying();
+        return (this.playerConnected && DZ.player.isPlaying()) || this.audioService.isPlaying();
     }
 
     stop() {
@@ -171,7 +171,7 @@ export class DeezerMainService {
     }
 
     setVolume(volume: number) {
-        if (this.deezerConnected && DZ.player.isPlaying()) {
+        if (this.playerConnected && DZ.player.isPlaying()) {
             DZ.player.setVolume(volume);
         } else if (this.audioService.isPlaying()) {
             this.audioService.setVolume(volume);
@@ -179,7 +179,7 @@ export class DeezerMainService {
     }
 
     getVolume() {
-        if (this.deezerConnected && DZ.player.isPlaying()) {
+        if (this.playerConnected && DZ.player.isPlaying()) {
             return DZ.player.getVolume();
         }
         if (this.audioService.isPlaying()) {
@@ -192,7 +192,7 @@ export class DeezerMainService {
         // Play a track
         this.socket.on('track', ((trackId) => {
             console.log('Play track', trackId);
-            if (!this.deezerConnected) {
+            if (!this.playerConnected) {
                 console.log('Cannot play track', trackId, 'not connected');
                 return
             }
@@ -214,7 +214,7 @@ export class DeezerMainService {
             var shuffledTracks = [];
             this.stationuuid = '';
             this.audioService.stop();
-            if (!this.deezerConnected) {
+            if (!this.playerConnected) {
                 console.log('Cannot play playlist', playlist, 'not connected');
                 return
             }
@@ -266,7 +266,7 @@ export class DeezerMainService {
                 this.audioService.stop();
                 if (this.musicStatus == 'stop') {
                     if (this.queue.length > 0) {
-                        if (!this.deezerConnected) {
+                        if (!this.playerConnected) {
                             console.log('Cannot play not connected');
                             return
                         }
@@ -277,7 +277,7 @@ export class DeezerMainService {
                         });
                     }
                 } else {
-                    if (!this.deezerConnected) {
+                    if (!this.playerConnected) {
                         console.log('Cannot play not connected');
                         return
                     }
@@ -289,7 +289,7 @@ export class DeezerMainService {
         this.socket.on('pause', (() => {
             console.log('pause');
             this.audioService.pause();
-            if (this.deezerConnected) {
+            if (this.playerConnected) {
                 DZ.player.pause();
             }
             this.socket.emit('musicStatus', 'pause');
@@ -299,7 +299,7 @@ export class DeezerMainService {
             console.log('stop');
             if (this.audioService.isPlaying()) {
                 this.audioService.stop();
-            } else if (this.deezerConnected && DZ.player.isPlaying())
+            } else if (this.playerConnected && DZ.player.isPlaying())
                 DZ.player.pause();
             this.musicStatus = 'stop';
             this.socket.emit('musicStatus', 'stop');
@@ -314,7 +314,7 @@ export class DeezerMainService {
         // Seek
         this.socket.on('seek', ((position) => {
             console.log('seek', position);
-            if (this.deezerConnected) {
+            if (this.playerConnected) {
                 DZ.player.seek(position);
             }
         }).bind(this));
@@ -324,7 +324,7 @@ export class DeezerMainService {
         }).bind(this));
     }
 
-    deezerEvent() {
+    playerEvent() {
         // Listen for player's events
 
         // Playing, player_position change, we use it to determine if the track is ended

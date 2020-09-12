@@ -3,7 +3,7 @@ import {IgxButtonGroupComponent, IgxCarouselComponent, IgxInputDirective, IgxSwi
 import {Router} from '@angular/router';
 import * as io from 'socket.io-client';
 import {AlarmService} from '../alarm.service';
-import {DeezerMainService} from "../deezer-main.service";
+import {PlayerMainService} from "../player-main.service";
 import {IRadio} from "../interfaces";
 import {HttpClient} from "@angular/common/http";
 import DZ = DeezerSdk.DZ;
@@ -33,7 +33,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     @ViewChild("playlistSelect", {static: false}) public playlistSelect: IgxCarouselComponent;
     @ViewChild("radioSelect", {static: false}) public radioSelect: IgxCarouselComponent;
 
-    constructor(public router: Router, private alarmService: AlarmService, private deezerMainService: DeezerMainService, private httpClient: HttpClient) {
+    constructor(public router: Router, private alarmService: AlarmService, private playerMainService: PlayerMainService, private httpClient: HttpClient) {
     }
 
     ngOnInit(): void {
@@ -49,7 +49,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.volumeIncreaseDuration = result.volumeIncreaseDuration;
                 this.snoozeAfter = result.snoozeAfter;
                 // @ts-ignore
-                this.deezerMainService.ensureDeezerConnected(((msg, socket) => {
+                this.playerMainService.ensurePlayerConnected(((msg, socket) => {
                     console.log(msg);
                     DZ.api('/user/me/playlists', (response) => {
                         this.playlists = [];

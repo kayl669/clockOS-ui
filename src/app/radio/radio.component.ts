@@ -4,7 +4,7 @@ import * as io from 'socket.io-client';
 import {HttpClient} from "@angular/common/http";
 import {IRadio} from "../interfaces";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
-import {DeezerMainService} from "../deezer-main.service";
+import {PlayerMainService} from "../player-main.service";
 
 @Component({
     selector: 'app-radio',
@@ -19,12 +19,12 @@ export class RadioComponent implements OnInit, AfterViewInit {
     public grid1: IgxGridComponent;
     private socket;
 
-    constructor(public router: Router, private httpClient: HttpClient, private deezerMainService: DeezerMainService) {
+    constructor(public router: Router, private httpClient: HttpClient, private playerMainService: PlayerMainService) {
         this.localData = [];
     }
 
     ngOnInit() {
-        this.deezerMainService.ensureConnected((msg, socket) => {
+        this.playerMainService.ensureConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
         });

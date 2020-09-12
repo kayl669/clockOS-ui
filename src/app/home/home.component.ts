@@ -4,7 +4,7 @@ import {WeatherService} from '../weather.service';
 import {ICurrentWeather} from '../interfaces';
 import {AlarmService} from '../alarm.service';
 import moment from 'moment';
-import {DeezerMainService} from "../deezer-main.service";
+import {PlayerMainService} from "../player-main.service";
 import * as io from 'socket.io-client';
 
 declare var $: any;
@@ -27,7 +27,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         public router: Router,
         private alarmService: AlarmService,
         private weatherService: WeatherService,
-        public deezerMainService: DeezerMainService) {
+        public playerMainService: PlayerMainService) {
     }
 
     @HostBinding('style.display') display = 'block';
@@ -140,21 +140,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     private navigateUp() {
         console.log('UP');
-        if (this.deezerMainService.isPlaying()) {
-            var volume = this.deezerMainService.getVolume() + 10;
+        if (this.playerMainService.isPlaying()) {
+            var volume = this.playerMainService.getVolume() + 10;
             if (volume > 100)
                 volume = 100;
-            this.deezerMainService.setVolume(volume);
+            this.playerMainService.setVolume(volume);
         }
     }
 
     private navigateDown() {
         console.log('DOWN');
-        if (this.deezerMainService.isPlaying()) {
-            var volume = this.deezerMainService.getVolume() - 10;
+        if (this.playerMainService.isPlaying()) {
+            var volume = this.playerMainService.getVolume() - 10;
             if (volume < 0)
                 volume = 0;
-            this.deezerMainService.setVolume(volume);
+            this.playerMainService.setVolume(volume);
         }
     }
 
@@ -164,8 +164,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     private navigateStop() {
         console.log('STOP');
-        if (this.deezerMainService.isPlaying()) {
-            this.deezerMainService.stop();
+        if (this.playerMainService.isPlaying()) {
+            this.playerMainService.stop();
         }
         this.alarmService.stopAlarm();
     }
@@ -226,11 +226,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     disconnect() {
-        this.deezerMainService.disconnect()
+        this.playerMainService.disconnect()
     }
 
     reconnect() {
-        this.deezerMainService.ensureDeezerConnected(() => {
+        this.playerMainService.ensurePlayerConnected(() => {
             console.log("Reconnected");
         })
     }

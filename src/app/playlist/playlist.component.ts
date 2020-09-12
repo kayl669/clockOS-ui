@@ -1,16 +1,16 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
-import {DeezerMainService} from "../deezer-main.service";
+import {PlayerMainService} from "../player-main.service";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {Router} from "@angular/router";
 import * as io from 'socket.io-client';
 import DZ = DeezerSdk.DZ;
 
 @Component({
-    selector: 'app-deezer-playlist',
-    templateUrl: './deezer-playlist.component.html',
-    styleUrls: ['./deezer-playlist.component.scss']
+    selector: 'app-playlist',
+    templateUrl: './playlist.component.html',
+    styleUrls: ['./playlist.component.scss']
 })
-export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
+export class PlaylistComponent implements OnInit, AfterViewInit {
     keyPadSocket;
     localData: any[];
     current: number;
@@ -18,7 +18,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
     public grid1: IgxGridComponent;
     private socket;
 
-    constructor(public router: Router, private deezerMainService: DeezerMainService) {
+    constructor(public router: Router, private playerMainService: PlayerMainService) {
         this.localData = [];
     }
 
@@ -82,7 +82,7 @@ export class DeezerPlaylistComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         // @ts-ignore
-        this.deezerMainService.ensureDeezerConnected((msg, socket) => {
+        this.playerMainService.ensurePlayerConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
             DZ.api('/user/me/playlists', (response) => {

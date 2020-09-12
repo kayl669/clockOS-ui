@@ -38,10 +38,10 @@ import {WeatherService} from './weather.service';
 import {HttpClientModule} from '@angular/common/http';
 import {AlarmComponent} from './alarm/alarm.component';
 import {WeatherComponent} from './weather/weather.component';
-import {DeezerComponent} from './deezer/deezer.component';
+import {PlayerComponent} from './player/player.component';
 import {ScriptLoaderModule} from 'ngx-script-loader';
-import {DeezerPlaylistComponent} from './deezer-playlist/deezer-playlist.component';
-import {DeezerMainService} from './deezer-main.service';
+import {PlaylistComponent} from './playlist/playlist.component';
+import {PlayerMainService} from './player-main.service';
 import {RadioComponent} from './radio/radio.component';
 import {AudioService} from './audio.service';
 
@@ -54,8 +54,8 @@ import {AudioService} from './audio.service';
         SettingsComponent,
         AlarmComponent,
         WeatherComponent,
-        DeezerComponent,
-        DeezerPlaylistComponent,
+        PlayerComponent,
+        PlaylistComponent,
         RadioComponent
     ],
     imports: [
@@ -84,7 +84,7 @@ import {AudioService} from './audio.service';
         IgxSelectModule,
         IgxCarouselModule
     ],
-    providers: [WeatherService, DeezerMainService, AudioService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
+    providers: [WeatherService, PlayerMainService, AudioService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
     bootstrap: [AppComponent]
 })
 export class AppModule {
