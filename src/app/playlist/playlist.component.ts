@@ -3,7 +3,7 @@ import {PlayerMainService} from "../player-main.service";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {Router} from "@angular/router";
 import * as io from 'socket.io-client';
-import DZ = DeezerSdk.DZ;
+
 
 @Component({
     selector: 'app-playlist',
@@ -85,8 +85,8 @@ export class PlaylistComponent implements OnInit, AfterViewInit {
         this.playerMainService.ensurePlayerConnected((msg, socket) => {
             console.log(msg);
             this.socket = socket;
-            DZ.api('/user/me/playlists', (response) => {
-                this.localData = response.data;
+            this.playerMainService.searchPlayLists().then((response) => {
+                this.localData = response;
                 this.current = 0;
                 this.grid1.selectRows([this.localData[this.current].id]);
             });

@@ -65,13 +65,13 @@ svg {
 }
 
 .display-alarm {
-  display: flex;
   position: absolute;
   left: 560px;
   top: 30px;
   width: 150px;
   height: 60px;
   margin: auto;
+  z-index: -1;
 }
 
 .alarm-visibility {

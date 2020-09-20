@@ -4,11 +4,11 @@
         <igx-grid #grid1 igxPreventDocumentScroll [data]="localData" [cellSelection]="'none'" [rowSelection]="'single'"
                   [hideRowSelectors]="true" [primaryKey]="'id'" (onCellClick)="click($event)">
             <ng-template igxRowSelector let-rowContext></ng-template>
-            <igx-column field="title" header="Titre" width="200">
-                <ng-template igxCell let-cell="cell">
+            <igx-column field="details" header="Titre" width="200">
+                <ng-template igxCell let-cell>
                     <div class="cell__inner">
-                        <igx-avatar [src]="cell.row.rowData.picture_small" size="small"></igx-avatar>
-                        <span>{{ cell.value }}</span>
+                        <igx-avatar [src]="cell.picture" size="small"></igx-avatar>
+                        <span>{{ cell.title }}</span>
                     </div>
                 </ng-template>
             </igx-column>

@@ -6,7 +6,6 @@ import {AlarmService} from '../alarm.service';
 import {PlayerMainService} from "../player-main.service";
 import {IRadio} from "../interfaces";
 import {HttpClient} from "@angular/common/http";
-import DZ = DeezerSdk.DZ;
 
 @Component({
     selector: 'app-alarm',
@@ -29,7 +28,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     @ViewChild('dayOfWeek', {static: true}) dayOfWeekButtonGroup: IgxButtonGroupComponent;
     @ViewChild('timePicker', {static: true}) timePicker: IgxTimePickerComponent;
     @ViewChild('timePickerValue', {static: false}) timePickerValue: IgxInputDirective;
-    @ViewChild('enableDeezer', {static: true}) enableDeezer: IgxSwitchComponent;
+    @ViewChild('enablePlaylist', {static: true}) enablePlaylist: IgxSwitchComponent;
     @ViewChild("playlistSelect", {static: false}) public playlistSelect: IgxCarouselComponent;
     @ViewChild("radioSelect", {static: false}) public radioSelect: IgxCarouselComponent;
 
@@ -51,15 +50,15 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 // @ts-ignore
                 this.playerMainService.ensurePlayerConnected(((msg, socket) => {
                     console.log(msg);
-                    DZ.api('/user/me/playlists', (response) => {
+                    this.playerMainService.searchPlayLists().then((response) => {
                         this.playlists = [];
                         this.playlistCurrentIndex = 0;
                         console.log(result.playlist);
-                        for (let i = 0; i < response.data.length; i++) {
-                            let item = {id: response.data[i].id, picture: response.data[i].picture_small, title: response.data[i].title};
+                        for (let i = 0; i < response.length; i++) {
+                            let item = {id: response[i].id, picture: response[i].details.picture, title: response[i].details.title};
                             this.playlists.push(item);
-                            if (result.playlist == response.data[i].id) {
-                                this.enableDeezer.checked = true;
+                            if (result.playlist == response[i].id) {
+                                this.enablePlaylist.checked = true;
                                 this.playlistCurrentIndex = i;
                             }
                         }
@@ -73,7 +72,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                         let item = {id: data[i].stationuuid, picture: data[i].favicon, title: data[i].name};
                         this.radios.push(item);
                         if (result.stationuuid == data[i].stationuuid) {
-                            this.enableDeezer.checked = false;
+                            this.enablePlaylist.checked = false;
                             this.radioCurrentIndex = i;
                         }
                     }
@@ -143,9 +142,9 @@ export class AlarmComponent implements AfterViewInit, OnInit {
         switch (this.selected) {
             case 'playlist':
             case 'radios':
-                this.selected = 'enableDeezer';
+                this.selected = 'enablePlaylist';
                 break;
-            case 'enableDeezer':
+            case 'enablePlaylist':
                 this.selected = 'snoozeAfter';
                 break;
             case 'snoozeAfter':
@@ -174,7 +173,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                     this.selected = 'enableToggle';
                 break;
             case 'enableToggle':
-                this.selected = this.enableDeezer.checked ? 'playlist' : 'radios';
+                this.selected = this.enablePlaylist.checked ? 'playlist' : 'radios';
                 break;
         }
         console.log(this.selected);
@@ -207,10 +206,10 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.selected = 'snoozeAfter';
                 break;
             case 'snoozeAfter':
-                this.selected = 'enableDeezer';
+                this.selected = 'enablePlaylist';
                 break;
-            case 'enableDeezer':
-                this.selected = this.enableDeezer.checked ? 'playlist' : 'radios';
+            case 'enablePlaylist':
+                this.selected = this.enablePlaylist.checked ? 'playlist' : 'radios';
                 break;
             case 'playlist':
             case 'radios':
@@ -248,8 +247,8 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             case 'snoozeAfter':
                 this.snoozeAfter = this.snoozeAfter + 5;
                 break;
-            case 'enableDeezer':
-                this.enableDeezer.checked = !this.enableDeezer.checked;
+            case 'enablePlaylist':
+                this.enablePlaylist.checked = !this.enablePlaylist.checked;
                 break;
             case 'playlist':
                 this.playlistSelect.get(this.playlistCurrentIndex).active = false;
@@ -293,8 +292,8 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             case 'snoozeAfter':
                 this.snoozeAfter = this.snoozeAfter - 5;
                 break;
-            case 'enableDeezer':
-                this.enableDeezer.checked = !this.enableDeezer.checked;
+            case 'enablePlaylist':
+                this.enablePlaylist.checked = !this.enablePlaylist.checked;
                 break;
             case 'playlist':
                 this.playlistSelect.get(this.playlistCurrentIndex).active = false;
@@ -326,9 +325,9 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             volume: this.volume,
             volumeIncreaseDuration: this.volumeIncreaseDuration,
             snoozeAfter: this.snoozeAfter,
-            type: this.enableDeezer.checked ? 'Deezer' : 'Radio',
-            playlist: this.enableDeezer.checked ? this.playlists[this.playlistCurrentIndex].id : 0,
-            stationuuid: this.enableDeezer.checked ? '' : this.radios[this.radioCurrentIndex].id
+            type: this.enablePlaylist.checked ? 'Playlist' : 'Radio',
+            playlist: this.enablePlaylist.checked ? this.playlists[this.playlistCurrentIndex].id : 0,
+            stationuuid: this.enablePlaylist.checked ? '' : this.radios[this.radioCurrentIndex].id
         }).then(() => {
             this.keypadSocket.disconnect();
             this.router.navigate(['/']);

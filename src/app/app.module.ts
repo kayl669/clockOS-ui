@@ -1,4 +1,3 @@
-/// <reference types="@types/deezer-sdk"/>
 import {BrowserModule} from '@angular/platform-browser';
 import {LOCALE_ID, NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -44,6 +43,7 @@ import {PlaylistComponent} from './playlist/playlist.component';
 import {PlayerMainService} from './player-main.service';
 import {RadioComponent} from './radio/radio.component';
 import {AudioService} from './audio.service';
+import {YoutubePlayerService} from "./youtube-player.service";
 
 @NgModule({
     declarations: [
@@ -84,7 +84,11 @@ import {AudioService} from './audio.service';
         IgxSelectModule,
         IgxCarouselModule
     ],
-    providers: [WeatherService, PlayerMainService, AudioService, {provide: LOCALE_ID, useValue: 'fr-FR'}],
+    providers: [WeatherService,
+        PlayerMainService,
+        YoutubePlayerService,
+        AudioService,
+        {provide: LOCALE_ID, useValue: 'fr-FR'}],
     bootstrap: [AppComponent]
 })
 export class AppModule {
