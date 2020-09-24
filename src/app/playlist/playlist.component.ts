@@ -16,7 +16,6 @@ export class PlaylistComponent implements OnInit, AfterViewInit {
     current: number;
     @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
-    private socket;
 
     constructor(public router: Router, private playerMainService: PlayerMainService) {
         this.localData = [];
@@ -81,15 +80,10 @@ export class PlaylistComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        // @ts-ignore
-        this.playerMainService.ensurePlayerConnected((msg, socket) => {
-            console.log(msg);
-            this.socket = socket;
-            this.playerMainService.searchPlayLists().then((response) => {
-                this.localData = response;
-                this.current = 0;
-                this.grid1.selectRows([this.localData[this.current].id]);
-            });
+        this.playerMainService.searchPlayLists().then((response) => {
+            this.localData = response;
+            this.current = 0;
+            this.grid1.selectRows([this.localData[this.current].id]);
         });
     }
 
@@ -123,7 +117,7 @@ export class PlaylistComponent implements OnInit, AfterViewInit {
     }
 
     private navigateOK() {
-        this.socket.emit('playlist', {playlist: this.localData[this.current].id});
+        this.playerMainService.playList(this.localData[this.current].id);
         this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }

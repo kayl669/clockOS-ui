@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": [
-      "gapi.auth2"
+      "gapi.auth2",
+      "youtube"
     ]
   },
   "files": [

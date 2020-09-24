@@ -1,6 +1,7 @@
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterContentInit, Component, Renderer2} from '@angular/core';
 import {PlayerMainService} from "../player-main.service";
 import {YoutubePlayerService} from "../youtube-player.service";
+import {ScriptService} from "ngx-script-loader";
 
 
 @Component({
@@ -8,35 +9,24 @@ import {YoutubePlayerService} from "../youtube-player.service";
     templateUrl: './player.component.html',
     styleUrls: ['./player.component.scss']
 })
-export class PlayerComponent implements AfterViewInit {
-    socket;
+export class PlayerComponent implements AfterContentInit {
     position;
     public fullscreenActive = false;
     public shouldHideControl = false;
     timeout;
 
-    constructor(public playerMainService: PlayerMainService, private youtubePlayerService: YoutubePlayerService) {
+    constructor(private scriptService: ScriptService, public playerMainService: PlayerMainService, private youtubePlayerService: YoutubePlayerService, private renderer: Renderer2) {
     }
 
-    ngAfterViewInit(): void {
-        let doc = window.document;
-        let playerApi = doc.createElement('script');
-        playerApi.type = 'text/javascript';
-        playerApi.src = 'https://www.youtube.com/iframe_api';
-        doc.body.appendChild(playerApi);
-        this.youtubePlayerService.createPlayer();
-        this.playerMainService.ensureConnected((msg, socket) => {
-            console.log(msg);
-            this.socket = socket;
-            this.playerMainService.ensurePlayerConnected((msg, socket) => {
-                console.log(msg);
-                this.socket = socket;
+    ngAfterContentInit(): void {
+        const htmlId = this.youtubePlayerService.generateUniqueId();
+        const container = this.renderer.selectRootElement('#yt-player');
+        this.renderer.setAttribute(container, 'id', htmlId);
 
-                this.socket.on('musicPosition', (position) => {
-                    this.updatePosition(position);
-                });
-            });
-        });
+        this.youtubePlayerService.loadPlayerApi(htmlId);
+        this.playerMainService.positionChangedEvent.subscribe(((position) => {
+            this.updatePosition(position);
+        }).bind(this));
     }
 
     toggleFullscreen(): void {
@@ -60,6 +50,6 @@ export class PlayerComponent implements AfterViewInit {
     public seekTo(event) {
         let position = event.value * this.youtubePlayerService.getDuration() / 100;
         console.log(position, this.youtubePlayerService.getDuration());
-        this.youtubePlayerService.seekTo(position);
+        this.playerMainService.seek(position);
     }
 }

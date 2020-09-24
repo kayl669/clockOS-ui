@@ -11,23 +11,15 @@ import {PlayerMainService} from "../player-main.service";
     templateUrl: './radio.component.html',
     styleUrls: ['./radio.component.scss']
 })
-export class RadioComponent implements OnInit, AfterViewInit {
+export class RadioComponent implements AfterViewInit {
     keyPadSocket;
     localData: any[];
     current: number;
     @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
-    private socket;
 
     constructor(public router: Router, private httpClient: HttpClient, private playerMainService: PlayerMainService) {
         this.localData = [];
-    }
-
-    ngOnInit() {
-        this.playerMainService.ensureConnected((msg, socket) => {
-            console.log(msg);
-            this.socket = socket;
-        });
     }
 
     ngAfterViewInit(): void {
@@ -125,9 +117,7 @@ export class RadioComponent implements OnInit, AfterViewInit {
     }
 
     private navigateOK() {
-        this.socket.emit('radio', {
-            stationuuid: this.localData[this.current].stationuuid
-        });
+        this.playerMainService.radio(this.localData[this.current].stationuuid);
         this.keyPadSocket.disconnect();
         this.router.navigate(['/']);
     }

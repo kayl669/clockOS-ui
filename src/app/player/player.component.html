@@ -4,38 +4,41 @@
     </div>
     <div id="yt-mask" [ngClass]="this.fullscreenActive ? 'yt-mask-fullscreen' : 'yt-mask-normal'" (click)="this.toggleFullscreen()"></div>
 </div>
-<div class="display-card" [ngStyle]="{'z-index':'3','visibility':!this.shouldHideControl ? 'visible' : 'hidden'}">
+<div class="display-card" [ngStyle]="{'visibility':!this.shouldHideControl ? 'visible' : 'hidden'}">
 <igx-card type="outlined" class="myCard"
-              [ngStyle]="{'z-index':'3','visibility':!this.shouldHideControl&&(this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause') ? 'visible' : 'hidden'}">
+              [ngStyle]="{'visibility':!this.shouldHideControl&&(this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause') ? 'visible' : 'hidden'}">
         <igx-card-actions [reverse]="true">
-            <button igxButton="icon" (click)="this.socket.emit('play')">
+            <button igxButton="icon" (click)="this.playerMainService.play()">
                 <igx-icon>play_arrow</igx-icon>
             </button>
-            <button igxButton="icon" (click)="this.socket.emit('pause')">
+            <button igxButton="icon" (click)="this.playerMainService.pause()">
                 <igx-icon>pause</igx-icon>
             </button>
-            <button igxButton="icon" (click)="this.socket.emit('stop')">
+            <button igxButton="icon" (click)="this.playerMainService.stop()">
                 <igx-icon>stop</igx-icon>
             </button>
-            <button igxButton="icon" (click)="this.socket.emit('volume', '-10')">
+            <button igxButton="icon" (click)="this.playerMainService.setVolume(-10)">
                 <igx-icon>volume_down</igx-icon>
             </button>
-            <button igxButton="icon" (click)="this.socket.emit('volume', '+10')">
+            <button igxButton="icon" (click)="this.playerMainService.setVolume(+10)">
                 <igx-icon>volume_up</igx-icon>
             </button>
-            <button igxButton="icon" (click)="this.socket.emit('prevTrack')">
+            <button igxButton="icon" (click)="this.playerMainService.prevTrack()">
                 <igx-icon>skip_previous</igx-icon>
             </button>
-            <button igxButton="icon" (click)="this.socket.emit('nextTrack')">
+            <button igxButton="icon" (click)="this.playerMainService.nextTrack()">
                 <igx-icon>skip_next</igx-icon>
             </button>
         </igx-card-actions>
     </igx-card>
     <igx-card type="outlined" class="myCard">
-        <igx-card-header>
-<!--            <igx-avatar-->
-<!--                    [ngStyle]="(true||this.playerMainService.musicStatus == 'radio') ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}"-->
-<!--                    width="160px" height="160px" [src]="this.playerMainService.favicon"></igx-avatar>-->
+        <igx-card-header
+                [ngStyle]="(this.playerMainService.musicStatus == 'radio') ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}">
+            <igx-avatar width="160px" height="160px" [src]="this.playerMainService.favicon"></igx-avatar>
+            <h2 igxCardHeaderTitle>{{this.playerMainService.title}}</h2>
+        </igx-card-header>
+        <igx-card-header
+                [ngStyle]="(this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause') ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}">
             <h2 igxCardHeaderTitle>{{this.playerMainService.title}}</h2>
         </igx-card-header>
     </igx-card>

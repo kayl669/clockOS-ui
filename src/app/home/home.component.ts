@@ -164,9 +164,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     private navigateStop() {
         console.log('STOP');
-        if (this.playerMainService.isPlaying()) {
-            this.playerMainService.stop();
-        }
+        this.playerMainService.stop();
         this.alarmService.stopAlarm();
     }
 
@@ -230,8 +228,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     reconnect() {
-        this.playerMainService.ensurePlayerConnected(() => {
-            console.log("Reconnected");
-        })
+        this.playerMainService.ensurePlayerConnected()
     }
 }

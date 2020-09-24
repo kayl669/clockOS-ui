@@ -1,76 +1,112 @@
-import {EventEmitter, Injectable, Output} from '@angular/core';
+import {EventEmitter, Injectable, NgZone, Output} from '@angular/core';
+import {ReplaySubject} from "rxjs";
+import PlayerState = YT.PlayerState;
+import IvLoadPolicy = YT.IvLoadPolicy;
+import RelatedVideos = YT.RelatedVideos;
+import Controls = YT.Controls;
+import KeyboardControls = YT.KeyboardControls;
+import ShowInfo = YT.ShowInfo;
+import FullscreenButton = YT.FullscreenButton;
+import ModestBranding = YT.ModestBranding;
+import VideoByIdSettings = YT.VideoByIdSettings;
 
-let _window: any = window;
+export interface VideoAndPlaylistSettings extends VideoByIdSettings {
+    playlistId: string;
+}
 
-@Injectable()
+export interface IPlayerOutputs {
+    ready?: EventEmitter<YT.Player>;
+    change?: EventEmitter<YT.PlayerEvent>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class YoutubePlayerService {
-    public yt_player = null;
+    api: ReplaySubject<YT.Player>;
+    private ytPlayer: YT.Player = null;
+    private ytApiLoaded = false;
+
     private currentVideoId: string;
     private currentPlaylistId: string;
     private currentVideoText: string;
-    private playerReady: boolean = false;
 
     @Output() videoChangeEvent: EventEmitter<any> = new EventEmitter(true);
     @Output() playPauseEvent: EventEmitter<any> = new EventEmitter(true);
     @Output() currentPosition: EventEmitter<any> = new EventEmitter(true);
     @Output() currentTrack: EventEmitter<any> = new EventEmitter(true);
 
-    createPlayer(): void {
-        this.playerReady = false;
-        this.yt_player = null;
-        let interval = setInterval((() => {
-            if ((typeof _window.YT !== 'undefined') && _window.YT && _window.YT.Player) {
-                this.yt_player = new _window.YT.Player('yt-player', {
-                    width: '160',
-                    height: '160',
-                    playerVars: {
-                        iv_load_policy: '3',
-                        rel: '0',
-                        controls: '0',
-                        disablekb: '1',
-                        showinfo: '0',
-                        fs: '0',
-                        modestbranding: '1'
-
-                    },
-                    events: {
-                        onReady: (() => {
-                            console.log("Ready to rock", this.currentVideoId, this.currentPlaylistId, this.currentVideoText);
-                            this.playerReady = true;
-                            if (this.currentVideoId != null)
-                                this.playVideo(this.currentVideoId, this.currentPlaylistId, this.currentVideoText);
-                        }).bind(this),
-                        onStateChange: (ev) => {
-                            this.onPlayerStateChange(ev);
-                        }
-                    }
-                });
-                clearInterval(interval);
+    constructor(private zone: NgZone) {
+        this.api = new ReplaySubject(1);
+        window['onYouTubeIframeAPIReady'] = (() => {
+            if (window) {
+                this.api.next(window['YT']);
             }
-        }).bind(this), 100);
+        }).bind(this);
     }
 
-    onPlayerStateChange(event: any) {
+    loadPlayerApi(htmlId: string) {
+        if (!this.ytApiLoaded) {
+            this.ytApiLoaded = true;
+            const playerApiScript = window.document.createElement('script');
+            playerApiScript.type = 'text/javascript';
+            playerApiScript.src = `http://www.youtube.com/iframe_api`;
+            window.document.body.appendChild(playerApiScript);
+        }
+        this.api.subscribe(() => {
+            if (window['YT'].Player) {
+                new window['YT'].Player(htmlId, {
+                    height: 160,
+                    width: 160,
+                    events: {
+                        onReady: (ev: YT.PlayerEvent) => {
+                            console.log("Loaded", ev);
+                            this.zone.run(() => {
+                                this.ytPlayer = ev.target;
+                                if (this.currentVideoId != null) {
+                                    this.playVideo(this.currentVideoId, this.currentPlaylistId, this.currentVideoText);
+                                }
+                            });
+                        },
+                        onStateChange: (ev: YT.OnStateChangeEvent) => {
+                            this.zone.run(() => this.onPlayerStateChange(ev));
+                        }
+                    },
+                    playerVars: {
+                        iv_load_policy: IvLoadPolicy.Hide,
+                        rel: RelatedVideos.Hide,
+                        controls: Controls.Hide,
+                        disablekb: KeyboardControls.Disable,
+                        showinfo: ShowInfo.Hide,
+                        fs: FullscreenButton.Hide,
+                        modestbranding: ModestBranding.Modest
+                    }
+                });
+            }
+        });
+    }
+
+    onPlayerStateChange(event: YT.OnStateChangeEvent) {
         const state = event.data;
         console.log('onPlayerStateChange', event);
         switch (state) {
-            case 0:
+            case PlayerState.ENDED:
                 this.videoChangeEvent.emit(true);
                 this.playPauseEvent.emit('stop');
                 break;
-            case 1:
+            case PlayerState.PLAYING:
                 this.updateBar();
                 this.playPauseEvent.emit('play');
                 break;
-            case 2:
+            case PlayerState.PAUSED:
                 this.playPauseEvent.emit('pause');
                 break;
         }
     }
 
     updateBar() {
-        if (this.yt_player != null && this.yt_player.getPlayerState() == 1) {
-            this.currentPosition.emit({position: this.yt_player.getCurrentTime(), total: this.yt_player.getDuration()});
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.currentPosition.emit({position: this.ytPlayer.getCurrentTime(), total: this.ytPlayer.getDuration()});
             setTimeout((this.updateBar).bind(this), 1000);
         }
     }
@@ -79,11 +115,13 @@ export class YoutubePlayerService {
         this.currentVideoId = videoId;
         this.currentPlaylistId = playlistId;
         this.currentVideoText = videoText;
-        if (!this.currentVideoId || this.yt_player == null || !this.playerReady) {
+        console.log("Try to read ", this.currentVideoId, ' playlistId ', this.currentPlaylistId, this.currentVideoText);
+        if (!this.currentVideoId || !(this.ytPlayer && this.ytPlayer.getPlayerState)) {
             return;
         }
         console.log("Reading ", this.currentVideoId, ' playlistId ', this.currentPlaylistId, this.currentVideoText);
-        this.yt_player.loadVideoById({'videoId': videoId, 'list': playlistId, 'suggestedQuality': 'medium'});
+        let videoId1: VideoAndPlaylistSettings = {videoId: videoId, playlistId: this.currentPlaylistId, suggestedQuality: "medium"};
+        this.ytPlayer.loadVideoById(videoId1);
         this.currentTrack.emit({
             videoId: this.currentVideoId,
             playlistId: this.currentPlaylistId,
@@ -92,55 +130,64 @@ export class YoutubePlayerService {
     }
 
     pausePlayingVideo(): void {
-        if (this.yt_player != null)
-            this.yt_player.pauseVideo();
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.ytPlayer.pauseVideo();
+        }
     }
 
     stopPlayingVideo(): void {
         this.currentVideoId = '';
         this.currentPlaylistId = '';
         this.currentVideoText = '';
-        if (this.yt_player != null) {
-            this.yt_player.stopVideo();
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.ytPlayer.stopVideo();
         }
     }
 
     playPausedVideo(): void {
-        if (this.yt_player != null)
-            this.yt_player.playVideo();
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.ytPlayer.playVideo();
+        }
     }
 
     resizePlayer(width: number, height: number) {
-        if (this.yt_player != null)
-            this.yt_player.setSize(width, height);
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.ytPlayer.setSize(width, height);
+        }
     }
 
     setVolume(volume: number) {
-        if (this.yt_player != null)
-            this.yt_player.setVolume(volume);
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.ytPlayer.setVolume(volume);
+        }
     }
 
     getVolume(): number {
-        if (this.yt_player != null)
-            return this.yt_player.getVolume();
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            return this.ytPlayer.getVolume();
+        }
         return -1;
     }
 
     seekTo(position: number) {
-        if (this.yt_player != null)
-            this.yt_player.seekTo(position, true);
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            this.ytPlayer.seekTo(position, true);
+        }
     }
 
     isPlaying() {
-        if (this.yt_player == null)
-            return false;
-        let playerState = this.yt_player.getPlayerState();
-        return playerState == 1 || playerState == 3 || playerState == 5;
+        // because YT is not loaded yet 1 is used - YT.PlayerState.PLAYING
+        return this.ytPlayer && this.ytPlayer.getPlayerState && this.ytPlayer.getPlayerState() !== PlayerState.ENDED && this.ytPlayer.getPlayerState() !== PlayerState.PAUSED;
     }
 
     getDuration() {
-        if (this.yt_player == null)
-            return -1;
-        return this.yt_player.getDuration();
+        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+            return this.ytPlayer.getDuration();
+        }
+        return -1;
+    }
+
+    generateUniqueId() {
+        return Math.random().toString(35).substr(2, 7);
     }
 }

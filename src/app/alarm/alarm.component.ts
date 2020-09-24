@@ -47,22 +47,18 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                 this.volume = result.volume;
                 this.volumeIncreaseDuration = result.volumeIncreaseDuration;
                 this.snoozeAfter = result.snoozeAfter;
-                // @ts-ignore
-                this.playerMainService.ensurePlayerConnected(((msg, socket) => {
-                    console.log(msg);
-                    this.playerMainService.searchPlayLists().then((response) => {
-                        this.playlists = [];
-                        this.playlistCurrentIndex = 0;
-                        console.log(result.playlist);
-                        for (let i = 0; i < response.length; i++) {
-                            let item = {id: response[i].id, picture: response[i].details.picture, title: response[i].details.title};
-                            this.playlists.push(item);
-                            if (result.playlist == response[i].id) {
-                                this.enablePlaylist.checked = true;
-                                this.playlistCurrentIndex = i;
-                            }
+                this.playerMainService.searchPlayLists().then(((response) => {
+                    this.playlists = [];
+                    this.playlistCurrentIndex = 0;
+                    console.log(result.playlist);
+                    for (let i = 0; i < response.length; i++) {
+                        let item = {id: response[i].id, picture: response[i].details.picture, title: response[i].details.title};
+                        this.playlists.push(item);
+                        if (result.playlist == response[i].id) {
+                            this.enablePlaylist.checked = true;
+                            this.playlistCurrentIndex = i;
                         }
-                    });
+                    }
                 }).bind(this));
                 this.httpClient.get<IRadio[]>("https://de1.api.radio-browser.info/json/stations/search?countrycode=FR&language=fr&limit=30&order=clickcount&reverse=true").subscribe(data => {
                     console.log(data);
