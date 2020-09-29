@@ -1,52 +1,50 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {Router} from "@angular/router";
-import * as io from 'socket.io-client';
 import {HttpClient} from "@angular/common/http";
 import {IRadio} from "../interfaces";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {PlayerMainService} from "../player-main.service";
+import {KeypadService} from "../keypad.service";
 
 @Component({
     selector: 'app-radio',
     templateUrl: './radio.component.html',
     styleUrls: ['./radio.component.scss']
 })
-export class RadioComponent implements AfterViewInit {
-    keyPadSocket;
+export class RadioComponent implements OnInit, AfterViewInit {
+    muted: boolean = true;
     localData: any[];
     current: number;
     @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
 
-    constructor(public router: Router, private httpClient: HttpClient, private playerMainService: PlayerMainService) {
+    constructor(public router: Router, private httpClient: HttpClient, private playerMainService: PlayerMainService, private keypadService: KeypadService) {
         this.localData = [];
     }
 
-    ngAfterViewInit(): void {
-        this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
-        this.keyPadSocket
-            .on('connected', (data, identification) => {
-                identification('keypad');
-                console.log('Connected as keypad');
-            })
-            .on('RIGHT', (() => {
-                this.navigateRight();
-            }).bind(this))
-            .on('DOWN', (() => {
-                this.navigateDown();
-            }).bind(this))
-            .on('UP', (() => {
-                this.navigateUp();
-            }).bind(this))
-            .on('STOP', (() => {
-                this.navigateStop();
-            }).bind(this))
-            .on('LEFT', (() => {
-                this.navigateLeft();
-            }).bind(this))
-            .on('OK', (() => {
-                this.navigateOK();
-            }).bind(this));
+    ngOnInit(): void {
+        this.keypadService.rightEvent.subscribe((() => {
+            if (!this.muted) this.navigateRight();
+        }).bind(this));
+        this.keypadService.downEvent.subscribe((() => {
+            if (!this.muted) this.navigateDown();
+        }).bind(this));
+        this.keypadService.upEvent.subscribe((() => {
+            if (!this.muted) this.navigateUp();
+        }).bind(this));
+        this.keypadService.stopEvent.subscribe((() => {
+            if (!this.muted) this.navigateStop();
+        }).bind(this));
+        this.keypadService.leftEvent.subscribe((() => {
+            if (!this.muted) this.navigateLeft();
+        }).bind(this));
+        this.keypadService.oKEvent.subscribe((() => {
+            if (!this.muted) this.navigateOK();
+        }).bind(this));
+    }
+
+    ngAfterViewInit() {
+        this.muted = false;
         this.httpClient.get<IRadio[]>("https://de1.api.radio-browser.info/json/stations/search?countrycode=FR&language=fr&limit=30&order=clickcount&reverse=true").subscribe(data => {
             console.log(data);
             this.localData = data;
@@ -57,38 +55,11 @@ export class RadioComponent implements AfterViewInit {
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        switch (event.keyCode) {
-            case 37:
-                // Left key
-                this.navigateLeft();
-                break;
-            case 39:
-                // Right key
-                this.navigateRight();
-                break;
-            case 38:
-                // Up key
-                this.navigateUp();
-                break;
-            case 40:
-                // Down key
-                this.navigateDown();
-                break;
-            case 35:
-                // End key
-                this.navigateStop();
-                break;
-            case 34:
-                // Page down key
-                this.navigateOK();
-                break;
-            default:
-            // any other key was pressed
-        }
+        this.keypadService.handleKeyboardEvent(event);
     }
 
     private navigateLeft() {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 
@@ -118,12 +89,12 @@ export class RadioComponent implements AfterViewInit {
 
     private navigateOK() {
         this.playerMainService.radio(this.localData[this.current].stationuuid);
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 
     private navigateStop() {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 

@@ -1,14 +1,13 @@
-import {AfterViewInit, Component, HostListener} from '@angular/core';
+import {AfterViewInit, Component, HostListener, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import * as io from 'socket.io-client';
+import {KeypadService} from "../keypad.service";
 
 @Component({
     selector: 'app-menu',
     templateUrl: './menu.component.html',
     styleUrls: ['./menu.component.scss']
 })
-export class MenuComponent implements AfterViewInit {
-    keyPadSocket;
+export class MenuComponent implements OnInit, AfterViewInit {
     public navigationItems: { icon: string; name: string; routerLink: string }[] = [
         {
             name: 'Alarme',
@@ -37,67 +36,39 @@ export class MenuComponent implements AfterViewInit {
         },
     ];
     public selected = 0;
+    muted: boolean = true;
 
-    constructor(public router: Router) {
+    constructor(private router: Router, private keypadService: KeypadService) {
+    }
+
+    ngOnInit(): void {
+        this.keypadService.rightEvent.subscribe((() => {
+            if (!this.muted) this.navigateRight();
+        }).bind(this));
+        this.keypadService.downEvent.subscribe((() => {
+            if (!this.muted) this.navigateDown();
+        }).bind(this));
+        this.keypadService.upEvent.subscribe((() => {
+            if (!this.muted) this.navigateUp();
+        }).bind(this));
+        this.keypadService.stopEvent.subscribe((() => {
+            if (!this.muted) this.navigateStop();
+        }).bind(this));
+        this.keypadService.leftEvent.subscribe((() => {
+            if (!this.muted) this.navigateLeft();
+        }).bind(this));
+        this.keypadService.oKEvent.subscribe((() => {
+            if (!this.muted) this.navigateOK();
+        }).bind(this));
     }
 
     ngAfterViewInit() {
-            this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
-            this.keyPadSocket
-                .on('connected', (data, identification) => {
-                    identification('keypad');
-                    console.log('Connected as keypad');
-                })
-                .on('RIGHT', (() => {
-                    this.navigateRight();
-                }).bind(this))
-                .on('DOWN', (() => {
-                    this.navigateDown();
-                }).bind(this))
-                .on('UP', (() => {
-                    this.navigateUp();
-                }).bind(this))
-                .on('STOP', (() => {
-                    this.navigateStop();
-                }).bind(this))
-                .on('LEFT', (() => {
-                    this.navigateLeft();
-                }).bind(this))
-                .on('OK', (() => {
-                    this.navigateOK();
-                }).bind(this));
+        this.muted = false;
     }
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        switch (event.keyCode) {
-            case 37:
-                // Left key
-                this.navigateLeft();
-                break;
-            case 39:
-                // Right key
-                this.navigateRight();
-                break;
-            case 38:
-                // Up key
-                this.navigateUp();
-                break;
-            case 40:
-                // Down key
-                this.navigateDown();
-                break;
-            case 35:
-                // End key
-                this.navigateStop();
-                break;
-            case 34:
-                // Page down key
-                this.navigateOK();
-                break;
-            default:
-            // any other key was pressed
-        }
+        this.keypadService.handleKeyboardEvent(event);
     }
 
     private navigateLeft() {
@@ -121,12 +92,12 @@ export class MenuComponent implements AfterViewInit {
     }
 
     private navigateStop() {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 
     navigate(routerLink) {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate([routerLink]);
     }
 }

@@ -44,6 +44,7 @@ import {PlayerMainService} from './player-main.service';
 import {RadioComponent} from './radio/radio.component';
 import {AudioService} from './audio.service';
 import {YoutubePlayerService} from "./youtube-player.service";
+import {KeypadService} from "./keypad.service";
 
 @NgModule({
     declarations: [
@@ -85,6 +86,7 @@ import {YoutubePlayerService} from "./youtube-player.service";
         IgxCarouselModule
     ],
     providers: [WeatherService,
+        KeypadService,
         PlayerMainService,
         YoutubePlayerService,
         AudioService,

@@ -26,6 +26,7 @@ export class YoutubePlayerService {
     api: ReplaySubject<YT.Player>;
     private ytPlayer: YT.Player = null;
     private ytApiLoaded = false;
+    private ytPlayerLoaded = false;
 
     private currentVideoId: string;
     private currentPlaylistId: string;
@@ -55,21 +56,20 @@ export class YoutubePlayerService {
         }
         this.api.subscribe(() => {
             if (window['YT'].Player) {
+                this.ytPlayerLoaded = false;
                 new window['YT'].Player(htmlId, {
                     height: 160,
                     width: 160,
                     events: {
-                        onReady: (ev: YT.PlayerEvent) => {
+                        onReady: ((ev: YT.PlayerEvent) => {
                             console.log("Loaded", ev);
-                            this.zone.run(() => {
+                            this.zone.run((() => {
+                                this.ytPlayerLoaded = true;
                                 this.ytPlayer = ev.target;
-                                if (this.currentVideoId != null) {
-                                    this.playVideo(this.currentVideoId, this.currentPlaylistId, this.currentVideoText);
-                                }
-                            });
-                        },
+                            }).bind(this));
+                        }).bind(this),
                         onStateChange: (ev: YT.OnStateChangeEvent) => {
-                            this.zone.run(() => this.onPlayerStateChange(ev));
+                            this.zone.run((() => this.onPlayerStateChange(ev)).bind(this));
                         }
                     },
                     playerVars: {
@@ -105,22 +105,26 @@ export class YoutubePlayerService {
     }
 
     updateBar() {
-        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
+        if (this.ytPlayer && this.ytPlayerLoaded && this.ytPlayer.getPlayerState) {
             this.currentPosition.emit({position: this.ytPlayer.getCurrentTime(), total: this.ytPlayer.getDuration()});
             setTimeout((this.updateBar).bind(this), 1000);
         }
     }
 
-    playVideo(videoId: string, playlistId: string, videoText: string): void {
+    async playVideo(videoId: string, playlistId: string, videoText: string): Promise<void> {
         this.currentVideoId = videoId;
         this.currentPlaylistId = playlistId;
         this.currentVideoText = videoText;
         console.log("Try to read ", this.currentVideoId, ' playlistId ', this.currentPlaylistId, this.currentVideoText);
-        if (!this.currentVideoId || !(this.ytPlayer && this.ytPlayer.getPlayerState)) {
-            return;
+        while (!(this.ytPlayer && this.ytPlayerLoaded && this.ytPlayer.getPlayerState)) {
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, 1000);
+            });
         }
         console.log("Reading ", this.currentVideoId, ' playlistId ', this.currentPlaylistId, this.currentVideoText);
-        let videoId1: VideoAndPlaylistSettings = {videoId: videoId, playlistId: this.currentPlaylistId, suggestedQuality: "medium"};
+        let videoId1: VideoAndPlaylistSettings = {videoId: videoId, playlistId: this.currentPlaylistId, suggestedQuality: "small"};
         this.ytPlayer.loadVideoById(videoId1);
         this.currentTrack.emit({
             videoId: this.currentVideoId,

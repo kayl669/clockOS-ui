@@ -1,4 +1,4 @@
-import {AfterContentInit, Component, Renderer2} from '@angular/core';
+import {AfterViewInit, Component, Renderer2} from '@angular/core';
 import {PlayerMainService} from "../player-main.service";
 import {YoutubePlayerService} from "../youtube-player.service";
 import {ScriptService} from "ngx-script-loader";
@@ -9,24 +9,24 @@ import {ScriptService} from "ngx-script-loader";
     templateUrl: './player.component.html',
     styleUrls: ['./player.component.scss']
 })
-export class PlayerComponent implements AfterContentInit {
+export class PlayerComponent implements AfterViewInit {
     position;
     public fullscreenActive = false;
     public shouldHideControl = false;
     timeout;
 
     constructor(private scriptService: ScriptService, public playerMainService: PlayerMainService, private youtubePlayerService: YoutubePlayerService, private renderer: Renderer2) {
+        this.playerMainService.positionChangedEvent.subscribe(((position) => {
+            this.updatePosition(position);
+        }).bind(this));
     }
 
-    ngAfterContentInit(): void {
+    ngAfterViewInit() {
         const htmlId = this.youtubePlayerService.generateUniqueId();
         const container = this.renderer.selectRootElement('#yt-player');
         this.renderer.setAttribute(container, 'id', htmlId);
 
         this.youtubePlayerService.loadPlayerApi(htmlId);
-        this.playerMainService.positionChangedEvent.subscribe(((position) => {
-            this.updatePosition(position);
-        }).bind(this));
     }
 
     toggleFullscreen(): void {

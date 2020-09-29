@@ -1,19 +1,19 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angular/core';
 import {IgxButtonGroupComponent, IgxCarouselComponent, IgxInputDirective, IgxSwitchComponent, IgxTimePickerComponent, InteractionMode} from 'igniteui-angular';
 import {Router} from '@angular/router';
-import * as io from 'socket.io-client';
 import {AlarmService} from '../alarm.service';
 import {PlayerMainService} from "../player-main.service";
 import {IRadio} from "../interfaces";
 import {HttpClient} from "@angular/common/http";
+import {KeypadService} from "../keypad.service";
 
 @Component({
     selector: 'app-alarm',
     templateUrl: './alarm.component.html',
     styleUrls: ['./alarm.component.scss']
 })
-export class AlarmComponent implements AfterViewInit, OnInit {
-    keypadSocket;
+export class AlarmComponent implements OnInit, AfterViewInit {
+    muted: boolean = true;
     public mode: InteractionMode = InteractionMode.DropDown;
     volume;
     volumeIncreaseDuration;
@@ -32,7 +32,7 @@ export class AlarmComponent implements AfterViewInit, OnInit {
     @ViewChild("playlistSelect", {static: false}) public playlistSelect: IgxCarouselComponent;
     @ViewChild("radioSelect", {static: false}) public radioSelect: IgxCarouselComponent;
 
-    constructor(public router: Router, private alarmService: AlarmService, private playerMainService: PlayerMainService, private httpClient: HttpClient) {
+    constructor(public router: Router, private alarmService: AlarmService, private playerMainService: PlayerMainService, private httpClient: HttpClient, private keypadService: KeypadService) {
     }
 
     ngOnInit(): void {
@@ -74,64 +74,33 @@ export class AlarmComponent implements AfterViewInit, OnInit {
                     }
                 });
             }).bind(this));
+        this.keypadService.rightEvent.subscribe((() => {
+            if (!this.muted) this.navigateRight();
+        }).bind(this));
+        this.keypadService.downEvent.subscribe((() => {
+            if (!this.muted) this.navigateDown();
+        }).bind(this));
+        this.keypadService.upEvent.subscribe((() => {
+            if (!this.muted) this.navigateUp();
+        }).bind(this));
+        this.keypadService.stopEvent.subscribe((() => {
+            if (!this.muted) this.navigateStop();
+        }).bind(this));
+        this.keypadService.leftEvent.subscribe((() => {
+            if (!this.muted) this.navigateLeft();
+        }).bind(this));
+        this.keypadService.oKEvent.subscribe((() => {
+            if (!this.muted) this.navigateOK();
+        }).bind(this));
     }
 
     ngAfterViewInit() {
-        this.keypadSocket = io.connect("/", {rejectUnauthorized: false});
-        this.keypadSocket.on('connected', (data, identification) => {
-            identification('keypad');
-            console.log('Connected as keypad');
-        })
-            .on('RIGHT', (() => {
-                this.navigateRight();
-            }).bind(this))
-            .on('DOWN', (() => {
-                this.navigateDown();
-            }).bind(this))
-            .on('UP', (() => {
-                this.navigateUp();
-            }).bind(this))
-            .on('STOP', (() => {
-                this.navigateStop();
-            }).bind(this))
-            .on('LEFT', (() => {
-                this.navigateLeft();
-            }).bind(this))
-            .on('OK', (() => {
-                this.navigateOK();
-            }).bind(this));
+        this.muted = false;
     }
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        switch (event.keyCode) {
-            case 37:
-                // Left key
-                this.navigateLeft();
-                break;
-            case 39:
-                // Right key
-                this.navigateRight();
-                break;
-            case 38:
-                // Up key
-                this.navigateUp();
-                break;
-            case 40:
-                // Down key
-                this.navigateDown();
-                break;
-            case 35:
-                // End key
-                this.navigateStop();
-                break;
-            case 34:
-                // Page down key
-                this.navigateOK();
-                break;
-            default:
-            // any other key was pressed
-        }
+        this.keypadService.handleKeyboardEvent(event);
     }
 
     private navigateUp() {
@@ -325,13 +294,13 @@ export class AlarmComponent implements AfterViewInit, OnInit {
             playlist: this.enablePlaylist.checked ? this.playlists[this.playlistCurrentIndex].id : 0,
             stationuuid: this.enablePlaylist.checked ? '' : this.radios[this.radioCurrentIndex].id
         }).then(() => {
-            this.keypadSocket.disconnect();
+            this.muted = true;
             this.router.navigate(['/']);
         });
     }
 
     private navigateStop() {
-        this.keypadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 

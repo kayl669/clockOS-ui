@@ -1,10 +1,10 @@
 import {AfterViewInit, Component, HostListener, OnInit, ViewEncapsulation} from '@angular/core';
 import {Router} from '@angular/router';
-import * as io from 'socket.io-client';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {IWifiConnect, IWifiScan} from "../interfaces";
 import keyNavigation from 'simple-keyboard-key-navigation';
 import Keyboard from 'simple-keyboard';
+import {KeypadService} from "../keypad.service";
 
 @Component({
     selector: 'app-settings',
@@ -14,10 +14,10 @@ import Keyboard from 'simple-keyboard';
         './settings.component.scss']
 })
 export class SettingsComponent implements OnInit, AfterViewInit {
-    constructor(public router: Router, private httpClient: HttpClient) {
+    constructor(public router: Router, private httpClient: HttpClient, private keypadService: KeypadService) {
     }
 
-    keyPadSocket;
+    muted: boolean = true;
     keyboard: Keyboard;
     displayKeyboard: boolean;
     displayStatus: boolean;
@@ -36,7 +36,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             // Add
             //    enableKeyNavigation?:boolean;
             // to index.d.ts to make it work.
-            // enableKeyNavigation: true,
+            enableKeyNavigation: true,
             theme: 'hg-theme-default myTheme1',
             layoutName: 'default',
             layout: {
@@ -71,6 +71,24 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             ],
         });
         this.keyboard.options.enableKeyNavigation = true;
+        this.keypadService.rightEvent.subscribe((() => {
+            if (!this.muted) this.navigateRight();
+        }).bind(this));
+        this.keypadService.downEvent.subscribe((() => {
+            if (!this.muted) this.navigateDown();
+        }).bind(this));
+        this.keypadService.upEvent.subscribe((() => {
+            if (!this.muted) this.navigateUp();
+        }).bind(this));
+        this.keypadService.stopEvent.subscribe((() => {
+            if (!this.muted) this.navigateStop();
+        }).bind(this));
+        this.keypadService.leftEvent.subscribe((() => {
+            if (!this.muted) this.navigateLeft();
+        }).bind(this));
+        this.keypadService.oKEvent.subscribe((() => {
+            if (!this.muted) this.navigateOK();
+        }).bind(this));
     }
 
 
@@ -80,66 +98,17 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             this.networks = data;
             this.current = 0;
         });
-            this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
-            this.keyPadSocket
-                .on('connected', (data, identification) => {
-                    identification('keypad');
-                    console.log('Connected as keypad');
-                })
-                .on('RIGHT', (() => {
-                    this.navigateRight();
-                }).bind(this))
-                .on('DOWN', (() => {
-                    this.navigateDown();
-                }).bind(this))
-                .on('UP', (() => {
-                    this.navigateUp();
-                }).bind(this))
-                .on('STOP', (() => {
-                    this.navigateStop();
-                }).bind(this))
-                .on('LEFT', (() => {
-                    this.navigateLeft();
-                }).bind(this))
-                .on('OK', (() => {
-                    this.navigateOK();
-                }).bind(this));
+        this.muted = false;
     }
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        switch (event.keyCode) {
-            case 37:
-                // Left key
-                this.navigateLeft();
-                break;
-            case 39:
-                // Right key
-                this.navigateRight();
-                break;
-            case 38:
-                // Up key
-                this.navigateUp();
-                break;
-            case 40:
-                // Down key
-                this.navigateDown();
-                break;
-            case 35:
-                // End key
-                this.navigateStop();
-                break;
-            case 34:
-                // Page down key
-                this.navigateOK();
-                break;
-            default:
-                if (event.keyCode === 8 || event.keyCode === 46) {
-                    this.keyboard.setInput(this.keyboard.getInput().substr(0, this.keyboard.getInput().length - 1));
-                } else if (event.keyCode >= 32 && event.keyCode <= 126) {
-                    this.keyboard.setInput(this.keyboard.getInput() + event.key);
-                }
-            // any other key was pressed
+        this.keypadService.handleKeyboardEvent(event);
+        if ((event.keyCode >= 37 && event.keyCode <= 40) || event.keyCode === 35 || event.keyCode === 34) {
+        } else if (event.keyCode === 8 || event.keyCode === 46) {
+            this.keyboard.setInput(this.keyboard.getInput().substr(0, this.keyboard.getInput().length - 1));
+        } else if (event.keyCode >= 32 && event.keyCode <= 126) {
+            this.keyboard.setInput(this.keyboard.getInput() + event.key);
         }
     }
 
@@ -191,7 +160,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
             // @ts-ignore
             this.keyboard.modules.keyNavigation.left();
         } else {
-            this.keyPadSocket.disconnect();
+            this.muted = true;
             this.router.navigate(['/']);
         }
     }
@@ -232,7 +201,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
     }
 
     private navigateStop() {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 
@@ -255,7 +224,7 @@ export class SettingsComponent implements OnInit, AfterViewInit {
                 });
             });
         } else {
-            this.keyPadSocket.disconnect();
+            this.muted = true;
             this.router.navigate(['/']);
         }
     }

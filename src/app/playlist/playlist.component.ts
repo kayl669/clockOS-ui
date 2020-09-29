@@ -2,7 +2,7 @@ import {AfterViewInit, Component, HostListener, OnInit, ViewChild} from '@angula
 import {PlayerMainService} from "../player-main.service";
 import {IGridCellEventArgs, IgxGridComponent} from "igniteui-angular";
 import {Router} from "@angular/router";
-import * as io from 'socket.io-client';
+import {KeypadService} from "../keypad.service";
 
 
 @Component({
@@ -11,75 +11,44 @@ import * as io from 'socket.io-client';
     styleUrls: ['./playlist.component.scss']
 })
 export class PlaylistComponent implements OnInit, AfterViewInit {
-    keyPadSocket;
+    muted: boolean = true;
     localData: any[];
     current: number;
     @ViewChild("grid1", {read: IgxGridComponent, static: false})
     public grid1: IgxGridComponent;
 
-    constructor(public router: Router, private playerMainService: PlayerMainService) {
+    constructor(public router: Router, private playerMainService: PlayerMainService, private keypadService: KeypadService) {
         this.localData = [];
     }
 
     ngOnInit(): void {
-        this.keyPadSocket = io.connect("/", {rejectUnauthorized: false});
-        this.keyPadSocket
-            .on('connected', (data, identification) => {
-                identification('keypad');
-                console.log('Connected as keypad');
-            })
-            .on('RIGHT', (() => {
-                this.navigateRight();
-            }).bind(this))
-            .on('DOWN', (() => {
-                this.navigateDown();
-            }).bind(this))
-            .on('UP', (() => {
-                this.navigateUp();
-            }).bind(this))
-            .on('STOP', (() => {
-                this.navigateStop();
-            }).bind(this))
-            .on('LEFT', (() => {
-                this.navigateLeft();
-            }).bind(this))
-            .on('OK', (() => {
-                this.navigateOK();
-            }).bind(this));
+        this.keypadService.rightEvent.subscribe((() => {
+            if (!this.muted) this.navigateRight();
+        }).bind(this));
+        this.keypadService.downEvent.subscribe((() => {
+            if (!this.muted) this.navigateDown();
+        }).bind(this));
+        this.keypadService.upEvent.subscribe((() => {
+            if (!this.muted) this.navigateUp();
+        }).bind(this));
+        this.keypadService.stopEvent.subscribe((() => {
+            if (!this.muted) this.navigateStop();
+        }).bind(this));
+        this.keypadService.leftEvent.subscribe((() => {
+            if (!this.muted) this.navigateLeft();
+        }).bind(this));
+        this.keypadService.oKEvent.subscribe((() => {
+            if (!this.muted) this.navigateOK();
+        }).bind(this));
     }
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        switch (event.keyCode) {
-            case 37:
-                // Left key
-                this.navigateLeft();
-                break;
-            case 39:
-                // Right key
-                this.navigateRight();
-                break;
-            case 38:
-                // Up key
-                this.navigateUp();
-                break;
-            case 40:
-                // Down key
-                this.navigateDown();
-                break;
-            case 35:
-                // End key
-                this.navigateStop();
-                break;
-            case 34:
-                // Page down key
-                this.navigateOK();
-                break;
-            // any other key was pressed
-        }
+        this.keypadService.handleKeyboardEvent(event);
     }
 
     ngAfterViewInit(): void {
+        this.muted = false;
         this.playerMainService.searchPlayLists().then((response) => {
             this.localData = response;
             this.current = 0;
@@ -88,7 +57,7 @@ export class PlaylistComponent implements OnInit, AfterViewInit {
     }
 
     private navigateLeft() {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 
@@ -118,12 +87,12 @@ export class PlaylistComponent implements OnInit, AfterViewInit {
 
     private navigateOK() {
         this.playerMainService.playList(this.localData[this.current].id);
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 
     private navigateStop() {
-        this.keyPadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/']);
     }
 

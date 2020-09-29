@@ -49,13 +49,11 @@ export class PlayerMainService {
     }
 
     initClient() {
-        let params = {
+        gapi.client.init({
             apiKey: this.youtubeApiKey,
             clientId: this.clientId,
-            fetch_basic_profile: true,
             scope: 'https://www.googleapis.com/auth/youtube.readonly'
-        };
-        gapi.client.init(params).then(() => {
+        }).then(() => {
             return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest", "v3");
         }).then(() => {
             this.apiLoaded = true;
@@ -69,7 +67,14 @@ export class PlayerMainService {
         });
     }
 
-    ensurePlayerConnected(): Promise<void> {
+    async ensurePlayerConnected(): Promise<void> {
+        while (!this.apiLoaded) {
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, 1000);
+            });
+        }
         if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
             return Promise.resolve();
         }
@@ -88,7 +93,7 @@ export class PlayerMainService {
         gapi.auth2.getAuthInstance().disconnect();
     }
 
-    public async searchPlayLists(): Promise<any> {
+    public searchPlayLists(): Promise<any> {
         return this.ensurePlayerConnected().then(() => {
             return gapi.client.request({
                 path: '/youtube/v3/playlists', params: {

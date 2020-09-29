@@ -5,7 +5,7 @@ import {ICurrentWeather} from '../interfaces';
 import {AlarmService} from '../alarm.service';
 import moment from 'moment';
 import {PlayerMainService} from "../player-main.service";
-import * as io from 'socket.io-client';
+import {KeypadService} from "../keypad.service";
 
 declare var $: any;
 
@@ -16,7 +16,7 @@ declare var $: any;
 })
 
 export class HomeComponent implements OnInit, AfterViewInit {
-    keypadSocket;
+    muted: boolean = true;
     current: ICurrentWeather;
     private tickInterval: number = 1000; // ms
     enableAlarm: boolean = false;
@@ -24,10 +24,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
     timeAlarm: string = "";
 
     constructor(
-        public router: Router,
+        private router: Router,
         private alarmService: AlarmService,
         private weatherService: WeatherService,
-        public playerMainService: PlayerMainService) {
+        public playerMainService: PlayerMainService,
+        private keypadService: KeypadService) {
     }
 
     @HostBinding('style.display') display = 'block';
@@ -35,39 +36,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        console.log(event.keyCode);
-        switch (event.keyCode) {
-            case 37:
-                // Left key
-                this.navigateLeft();
-                break;
-            case 39:
-                // Right key
-                this.navigateRight();
-                break;
-            case 38:
-                // Up key
-                this.navigateUp();
-                break;
-            case 40:
-                // Down key
-                this.navigateDown();
-                break;
-            case 35:
-                // End key
-                this.navigateStop();
-                break;
-            case 36:
-                // Home key
-                this.navigateSnooze();
-                break;
-            case 34:
-                // Page down key
-                this.navigateOK();
-                break;
-            default:
-            // any other key was pressed
-        }
+        this.keypadService.handleKeyboardEvent(event);
     }
 
     ngOnInit() {
@@ -77,13 +46,41 @@ export class HomeComponent implements OnInit, AfterViewInit {
             this.weatherService.getCity().subscribe(data => {
                 return (this.weatherService.updateCurrentWeather(data.city));
             });
+            this.updateAlarm();
         }, 60000);
         this.tick();
+        this.keypadService.rightEvent.subscribe((() => {
+            if (!this.muted) this.navigateRight();
+        }).bind(this));
+        this.keypadService.downEvent.subscribe((() => {
+            if (!this.muted) this.navigateDown();
+        }).bind(this));
+        this.keypadService.upEvent.subscribe((() => {
+            if (!this.muted) this.navigateUp();
+        }).bind(this));
+        this.keypadService.stopEvent.subscribe((() => {
+            if (!this.muted) this.navigateStop();
+        }).bind(this));
+        this.keypadService.leftEvent.subscribe((() => {
+            if (!this.muted) this.navigateLeft();
+        }).bind(this));
+        this.keypadService.oKEvent.subscribe((() => {
+            if (!this.muted) this.navigateOK();
+        }).bind(this));
+        this.keypadService.snoozeEvent.subscribe((() => {
+            if (!this.muted) this.navigateSnooze();
+        }).bind(this));
     }
 
     ngAfterViewInit() {
+        this.updateAlarm();
+        this.muted = false;
+    }
+
+    private updateAlarm() {
         this.alarmService.getAlarm().subscribe(result => {
             this.enableAlarm = result.activate;
+            console.log(result);
             const d = new Date();
             this.timeAlarmDaysOfWeek = "  ";
             var days = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
@@ -99,33 +96,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
             }
             this.timeAlarm = " " + moment(new Date(d.getFullYear(), d.getMonth(), d.getDay(), result.hour, result.minute, 0, 0)).format("HH:mm");
         })
-        this.keypadSocket = io.connect("/", {rejectUnauthorized: false});
-        this.keypadSocket
-            .on('connected', (data, identification) => {
-                identification('keypad');
-                console.log('Connected as keypad');
-            })
-            .on('RIGHT', (() => {
-                this.navigateRight();
-            }).bind(this))
-            .on('DOWN', (() => {
-                this.navigateDown();
-            }).bind(this))
-            .on('UP', (() => {
-                this.navigateUp();
-            }).bind(this))
-            .on('SNOOZE', (() => {
-                this.navigateSnooze();
-            }).bind(this))
-            .on('STOP', (() => {
-                this.navigateStop();
-            }).bind(this))
-            .on('LEFT', (() => {
-                this.navigateLeft();
-            }).bind(this))
-            .on('OK', (() => {
-                this.navigateOK();
-            }).bind(this));
     }
 
     private navigateLeft() {
@@ -134,7 +104,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     public navigateRight() {
         console.log('RIGHT');
-        this.keypadSocket.disconnect();
+        this.muted = true;
         this.router.navigate(['/menu']);
     }
 
