@@ -1,7 +1,5 @@
 import * as io from 'socket.io-client';
-import {EventEmitter, HostListener, Injectable, Output} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {IConfig} from "./interfaces";
+import {EventEmitter, Injectable, Output} from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -17,10 +15,8 @@ export class KeypadService {
   @Output() leftEvent: EventEmitter<any> = new EventEmitter(true);
   @Output() oKEvent: EventEmitter<any> = new EventEmitter(true);
 
-  constructor(private httpClient: HttpClient) {
-    this.httpClient.get<IConfig>('/config').toPromise().then(((data) => {
-      this.server = data.server;
-      this.keypadSocket = io.connect(this.server, {rejectUnauthorized: false});
+  constructor() {
+      this.keypadSocket = io.connect('/', {rejectUnauthorized: false});
       this.keypadSocket
           .on('connected', (data, identification) => {
             identification('keypad');
@@ -47,7 +43,6 @@ export class KeypadService {
           .on('OK', (() => {
             this.oKEvent.emit();
           }).bind(this));
-    }).bind(this));
   }
 
     handleKeyboardEvent(event: KeyboardEvent) {

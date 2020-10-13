@@ -1,7 +1,7 @@
 import * as io from 'socket.io-client';
 import {EventEmitter, Injectable, Output} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {IConfig, IRadio} from "./interfaces";
+import {IRadio} from "./interfaces";
 import {AudioService} from "./audio.service";
 import {YoutubePlayerService} from "./youtube-player.service";
 
@@ -33,12 +33,8 @@ export class PlayerMainService {
     constructor(private httpClient: HttpClient, private audioService: AudioService, private youtubePlayerService: YoutubePlayerService) {
         this.connected = false;
         this.apiLoaded = false;
-        console.log("Init");
-        this.httpClient.get<IConfig>('/config').toPromise().then(((data) => {
-            this.server = data.server;
-            this.player();
-            this.playerEvent();
-        }).bind(this));
+        this.player();
+        this.playerEvent();
     }
 
     async ensurePlayerConnected(): Promise<void> {
@@ -196,24 +192,24 @@ export class PlayerMainService {
                     .set('playlistId', playlistId)
                     .set('maxResults', '' + this.max_results)
             }).toPromise().then(response => {
-                    console.log('response ', response);
-                    let res = response['items'];
-                    this.nextToken = response['nextPageToken'] ? response['nextPageToken'] : undefined;
-                    for (let i = 0; i < res.length; i++) {
-                        tracks.push({
-                            videoId: res[i].snippet.resourceId.videoId,
-                            playlistId: res[i].snippet.playlistId,
-                            title: res[i].snippet.title
-                        });
-                    }
-                    while (tracks.length > 0) {
-                        const j = Math.floor(Math.random() * (tracks.length - 1));
-                        shuffledTracks.push(tracks.splice(j, 1)[0]);
-                    }
-                    this.title = shuffledTracks[0].title;
-                    console.log("Sending tracks", shuffledTracks);
-                    this.socket.emit('tracks', shuffledTracks);
-                });
+                console.log('response ', response);
+                let res = response['items'];
+                this.nextToken = response['nextPageToken'] ? response['nextPageToken'] : undefined;
+                for (let i = 0; i < res.length; i++) {
+                    tracks.push({
+                        videoId: res[i].snippet.resourceId.videoId,
+                        playlistId: res[i].snippet.playlistId,
+                        title: res[i].snippet.title
+                    });
+                }
+                while (tracks.length > 0) {
+                    const j = Math.floor(Math.random() * (tracks.length - 1));
+                    shuffledTracks.push(tracks.splice(j, 1)[0]);
+                }
+                this.title = shuffledTracks[0].title;
+                console.log("Sending tracks", shuffledTracks);
+                this.socket.emit('tracks', shuffledTracks);
+            });
         });
     }
 
@@ -223,7 +219,7 @@ export class PlayerMainService {
     }
 
     player() {
-        this.socket = io.connect(this.server, {rejectUnauthorized: false});
+        this.socket = io.connect('/', {rejectUnauthorized: false});
 
         this.socket.on('connected', ((data, identification) => {
             identification('player');

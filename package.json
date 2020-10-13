@@ -6,7 +6,8 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --disableHostCheck --proxy-config proxy.conf.json",
     "start-electron": "electron http://localhost:4200/",
-    "build": "ng build"
+    "build": "ng build",
+    "cleanup": "rimraf dist/*.map"
   },
   "private": true,
   "resolutions": {
