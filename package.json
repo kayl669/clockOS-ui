@@ -25,7 +25,6 @@
     "@angular/router": "8.2.8",
     "@types/deezer-sdk": "0.0.0",
     "@types/jquery": "^3.3.33",
-    "@types/gapi.auth2": "^0.0.52",
     "@types/youtube": "0.0.39",
     "angular-moment": "^1.3.0",
     "electron": "^8.1.0",

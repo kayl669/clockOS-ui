@@ -32,14 +32,18 @@ export class AlarmService {
     }
 
     public stopAlarm() {
-        this.httpClient.get<IAlarm>('/stopAlarm?date=' + new Date()).subscribe( data => {
+        this.httpClient.get<IAlarm>('/stopAlarm?date=' + new Date()).subscribe(data => {
             console.log(data)
         });
     }
 
     public snoozeAlarm() {
-        this.httpClient.get<IAlarm>('/snoozeAlarm?date='+new Date()).subscribe(data => {
+        this.httpClient.get<IAlarm>('/snoozeAlarm?date=' + new Date()).subscribe(data => {
             console.log(data)
         });
+    }
+
+    public isAlarmPlaying(): Observable<boolean> {
+        return this.httpClient.get<boolean>('/alarmPlaying?date=' + new Date());
     }
 }

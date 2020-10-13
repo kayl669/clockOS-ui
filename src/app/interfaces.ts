@@ -27,8 +27,6 @@ export interface ICity {
 export interface IConfig {
     openWeatherAppId: string;
     deezerAppId: string;
-    youtubeApiKey: string;
-    clientId: string;
     server: string;
 }
 

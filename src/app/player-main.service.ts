@@ -1,6 +1,6 @@
 import * as io from 'socket.io-client';
 import {EventEmitter, Injectable, Output} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {IConfig, IRadio} from "./interfaces";
 import {AudioService} from "./audio.service";
 import {YoutubePlayerService} from "./youtube-player.service";
@@ -13,8 +13,7 @@ export class PlayerMainService {
     max_results = 50;
     connected: boolean;
     apiLoaded: boolean;
-    youtubeApiKey: string;
-    clientId: string;
+    accessToken: string;
     server;
     socket;
     queue = [];
@@ -28,7 +27,6 @@ export class PlayerMainService {
 
     public nextToken: string;
     public lastQuery: string;
-    public user: gapi.auth2.GoogleUser;
 
     @Output() positionChangedEvent: EventEmitter<any> = new EventEmitter(true);
 
@@ -37,121 +35,84 @@ export class PlayerMainService {
         this.apiLoaded = false;
         console.log("Init");
         this.httpClient.get<IConfig>('/config').toPromise().then(((data) => {
-            this.youtubeApiKey = data.youtubeApiKey;
-            this.clientId = data.clientId;
             this.server = data.server;
             this.player();
             this.playerEvent();
-            gapi.load('client:auth2', (() => {
-                this.initClient();
-            }).bind(this));
         }).bind(this));
     }
 
-    initClient() {
-        gapi.client.init({
-            apiKey: this.youtubeApiKey,
-            clientId: this.clientId,
-            scope: 'https://www.googleapis.com/auth/youtube.readonly'
-        }).then(() => {
-            return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest", "v3");
-        }).then(() => {
-            this.apiLoaded = true;
-            gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn: boolean) => {
-                console.log("signedIn", signedIn);
-                if (!signedIn) {
-                    this.ensurePlayerConnected();
-                }
-            });
-            this.ensurePlayerConnected();
-        });
-    }
-
     async ensurePlayerConnected(): Promise<void> {
-        while (!this.apiLoaded) {
-            await new Promise(resolve => {
-                setTimeout(() => {
-                    resolve();
-                }, 1000);
-            });
-        }
-        if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-            return Promise.resolve();
-        }
-        console.log("SignIn");
-        return gapi.auth2.getAuthInstance().signIn().then((user => {
-            this.user = user;
-            console.log('Hello', user.getBasicProfile().getGivenName());
+        return this.httpClient.get('/accessToken').toPromise().then(((token) => {
+            this.accessToken = token;
         }).bind(this));
     }
 
     isPlayerConnected() {
-        return this.apiLoaded && gapi.auth2.getAuthInstance().isSignedIn.get();
+        return this.accessToken !== "";
     }
 
     disconnect() {
-        gapi.auth2.getAuthInstance().disconnect();
+        this.accessToken = "";
     }
 
     public searchPlayLists(): Promise<any> {
         return this.ensurePlayerConnected().then(() => {
-            return gapi.client.request({
-                path: '/youtube/v3/playlists', params: {
-                    'part': 'snippet,contentDetails',
-                    'mine': 'true', 'maxResults': this.max_results
+            return this.httpClient.get('https://www.googleapis.com/youtube/v3/playlists', {
+                headers: {
+                    'Authorization': 'Bearer ' + this.accessToken,
+                    'Accept': 'application/json'
+                },
+                params: new HttpParams()
+                    .set('part', 'snippet,contentDetails')
+                    .set('mine', 'true')
+                    .set('maxResults', '' + this.max_results)
+            }).toPromise().then(response => {
+                var res = [];
+                for (let i = 0; i < response['items'].length; i++) {
+                    const item = response['items'][i];
+                    res.push({
+                        id: item.id,
+                        details: {
+                            title: item.snippet.title,
+                            picture: item.snippet.thumbnails.default.url
+                        },
+                        nb_tracks: item.contentDetails.itemCount
+                    });
                 }
-            })
-                .then(response => {
-                    var res = [];
-                    for (let i = 0; i < response.result['items'].length; i++) {
-                        const item = response.result['items'][i];
-                        res.push({
-                            id: item.id,
-                            details: {
-                                title: item.snippet.title,
-                                picture: item.snippet.thumbnails.default.url
-                            },
-                            nb_tracks: item.contentDetails.itemCount
-                        });
-                    }
-                    console.log('res', res);
-                    return res;
-                });
+                console.log('res', res);
+                return res;
+            });
         });
     }
 
     playRadio(stationuuid: string) {
-        this.ensurePlayerConnected().then((() => {
-            this.musicStatus = 'radio';
-            this.youtubePlayerService.stopPlayingVideo();
-            console.log('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid);
-            this.httpClient.get<IRadio>('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid).subscribe(data => {
-                console.log(data[0].url);
-                this.stationuuid = data[0].stationuuid;
-                this.audioService.playStream(data[0].url);
-                if (this.currentVolume >= 0)
-                    this.audioService.setVolume(this.currentVolume);
-                this.title = data[0].name;
-                this.favicon = data[0].favicon;
-                this.lastPosition = 0;
-            });
-        }).bind(this));
+        this.musicStatus = 'radio';
+        this.youtubePlayerService.stopPlayingVideo();
+        console.log('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid);
+        this.httpClient.get<IRadio>('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid).subscribe(data => {
+            console.log(data[0].url);
+            this.stationuuid = data[0].stationuuid;
+            this.audioService.playStream(data[0].url);
+            if (this.currentVolume >= 0)
+                this.audioService.setVolume(this.currentVolume);
+            this.title = data[0].name;
+            this.favicon = data[0].favicon;
+            this.lastPosition = 0;
+        });
     }
 
     playMusic() {
-        this.ensurePlayerConnected().then(() => {
-            if (this.musicStatus == 'stop' || this.musicStatus == 'radio') {
-                if (this.queue.length > 0) {
-                    // If no track loaded, play the first in the queue
-                    let track = this.queue[0];
-                    this.youtubePlayerService.playVideo(track.videoId, track.playlistId, track.title);
-                    this.title = track.title;
-                    this.queue.splice(0, 1);
-                }
-            } else {
-                this.youtubePlayerService.playPausedVideo();
+        if (this.musicStatus == 'stop' || this.musicStatus == 'radio') {
+            if (this.queue.length > 0) {
+                // If no track loaded, play the first in the queue
+                let track = this.queue[0];
+                this.youtubePlayerService.playVideo(track.videoId, track.playlistId, track.title);
+                this.title = track.title;
+                this.queue.splice(0, 1);
             }
-        });
+        } else {
+            this.youtubePlayerService.playPausedVideo();
+        }
     }
 
     isPlaying() {
@@ -159,9 +120,7 @@ export class PlayerMainService {
     }
 
     play() {
-        this.ensurePlayerConnected().then(() => {
-            this.socket.emit('play');
-        });
+        this.socket.emit('play');
     }
 
     private playing() {
@@ -174,10 +133,8 @@ export class PlayerMainService {
 
     pause() {
         console.log("pausing");
-        this.ensurePlayerConnected().then(() => {
-            console.log("send pause");
-            this.socket.emit('pause');
-        });
+        console.log("send pause");
+        this.socket.emit('pause');
     }
 
     private pausing() {
@@ -189,9 +146,7 @@ export class PlayerMainService {
     }
 
     stop() {
-        this.ensurePlayerConnected().then(() => {
-            this.socket.emit('stop');
-        });
+        this.socket.emit('stop');
     }
 
     private stopping() {
@@ -206,27 +161,21 @@ export class PlayerMainService {
     }
 
     prevTrack() {
-        this.ensurePlayerConnected().then(() => {
+        if (this.musicStatus != 'radio')
             this.socket.emit('prevTrack');
-        });
     }
 
     nextTrack() {
-        this.ensurePlayerConnected().then(() => {
+        if (this.musicStatus != 'radio')
             this.socket.emit('nextTrack');
-        });
     }
 
     setVolume(volume: number) {
-        this.ensurePlayerConnected().then(() => {
-            this.socket.emit('volume', volume);
-        });
+        this.socket.emit('volume', volume);
     }
 
     seek(seek: number) {
-        this.ensurePlayerConnected().then(() => {
-            this.socket.emit('seek', seek);
-        });
+        this.socket.emit('seek', seek);
     }
 
     playList(playlistId: string) {
@@ -237,16 +186,19 @@ export class PlayerMainService {
             this.stationuuid = '';
             this.favicon = '';
             this.audioService.stop();
-            gapi.client.request({
-                path: '/youtube/v3/playlistItems', params: {
-                    'part': 'snippet',
-                    'playlistId': playlistId, 'maxResults': this.max_results
-                }
-            })
-                .then(response => {
-                    console.log('response ', response.result);
-                    let res = response.result['items'];
-                    this.nextToken = response.result['nextPageToken'] ? response.result['nextPageToken'] : undefined;
+            this.httpClient.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+                headers: {
+                    'Authorization': 'Bearer ' + this.accessToken,
+                    'Accept': 'application/json'
+                },
+                params: new HttpParams()
+                    .set('part', 'snippet')
+                    .set('playlistId', playlistId)
+                    .set('maxResults', '' + this.max_results)
+            }).toPromise().then(response => {
+                    console.log('response ', response);
+                    let res = response['items'];
+                    this.nextToken = response['nextPageToken'] ? response['nextPageToken'] : undefined;
                     for (let i = 0; i < res.length; i++) {
                         tracks.push({
                             videoId: res[i].snippet.resourceId.videoId,
@@ -267,19 +219,7 @@ export class PlayerMainService {
 
     radio(stationuuid: string) {
         console.log('Sending radio', stationuuid);
-        this.ensurePlayerConnected().then(() => {
-            this.socket.emit('radio', {stationuuid: stationuuid});
-        });
-    }
-
-    getVolume() {
-        if (this.youtubePlayerService.isPlaying()) {
-            return this.youtubePlayerService.getVolume();
-        }
-        if (this.audioService.isPlaying()) {
-            return this.audioService.getVolume();
-        }
-        return this.currentVolume;
+        this.socket.emit('radio', {stationuuid: stationuuid});
     }
 
     player() {
@@ -296,7 +236,7 @@ export class PlayerMainService {
         });
 
         this.socket.on('playlist', ((playlist) => {
-            this.playList(playlist);
+            this.playList(playlist.playlist);
         }).bind(this));
 
         this.socket.on('radio', ((radio) => {

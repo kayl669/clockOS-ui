@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, HostBinding, HostListener, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Params, Router} from '@angular/router';
 import {WeatherService} from '../weather.service';
 import {ICurrentWeather} from '../interfaces';
 import {AlarmService} from '../alarm.service';
@@ -23,12 +23,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     timeAlarmDaysOfWeek: string = "";
     timeAlarm: string = "";
 
-    constructor(
-        private router: Router,
-        private alarmService: AlarmService,
-        private weatherService: WeatherService,
-        public playerMainService: PlayerMainService,
-        private keypadService: KeypadService) {
+    constructor(private route: ActivatedRoute,
+                private router: Router,
+                private alarmService: AlarmService,
+                private weatherService: WeatherService,
+                public playerMainService: PlayerMainService,
+                private keypadService: KeypadService) {
     }
 
     @HostBinding('style.display') display = 'block';
@@ -47,7 +47,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
                 return (this.weatherService.updateCurrentWeather(data.city));
             });
             this.updateAlarm();
-        }, 60000);
+            this.playerMainService.ensurePlayerConnected().then((() => {
+                if (!this.playerMainService.isPlayerConnected()) {
+                    this.reconnect();
+                }
+            }).bind(this));
+            }, 60000);
         this.tick();
         this.keypadService.rightEvent.subscribe((() => {
             if (!this.muted) this.navigateRight();
@@ -73,14 +78,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.updateAlarm();
+        this.route.params.subscribe((params: Params) => {
+            if (params['command'] == 'connect') {
+                this.reconnect();
+            } else if (params['command'] == 'disconnect') {
+                this.disconnect();
+            }
+        });
         this.muted = false;
     }
 
     private updateAlarm() {
         this.alarmService.getAlarm().subscribe(result => {
             this.enableAlarm = result.activate;
-            console.log(result);
             const d = new Date();
             this.timeAlarmDaysOfWeek = "  ";
             var days = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
@@ -100,47 +110,60 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     private navigateLeft() {
         console.log('LEFT');
+        if (this.playerMainService.isPlaying()) {
+            this.playerMainService.prevTrack();
+        }
     }
 
     public navigateRight() {
-        console.log('RIGHT');
-        this.muted = true;
-        this.router.navigate(['/menu']);
+        console.log('RIGHT', this.playerMainService.isPlaying());
+        if (this.playerMainService.isPlaying()) {
+            this.playerMainService.nextTrack();
+        } else {
+            this.muted = true;
+            this.router.navigate(['/menu']);
+        }
     }
 
     private navigateUp() {
         console.log('UP');
         if (this.playerMainService.isPlaying()) {
-            var volume = this.playerMainService.getVolume() + 10;
-            if (volume > 100)
-                volume = 100;
-            this.playerMainService.setVolume(volume);
+            this.playerMainService.setVolume(+10);
         }
     }
 
     private navigateDown() {
         console.log('DOWN');
         if (this.playerMainService.isPlaying()) {
-            var volume = this.playerMainService.getVolume() - 10;
-            if (volume < 0)
-                volume = 0;
-            this.playerMainService.setVolume(volume);
+            this.playerMainService.setVolume(-10);
         }
     }
 
     private navigateOK() {
         console.log('OK');
+        if (!this.playerMainService.isPlaying()) {
+            this.playerMainService.play();
+        }
     }
 
     private navigateStop() {
         console.log('STOP');
-        this.playerMainService.stop();
-        this.alarmService.stopAlarm();
+        this.alarmService.isAlarmPlaying().subscribe((isPlaying) => {
+            if (isPlaying)
+                this.alarmService.stopAlarm();
+            else
+                this.playerMainService.stop();
+        });
     }
 
     private navigateSnooze() {
         console.log('SNOOZE');
-        this.alarmService.snoozeAlarm();
+        this.alarmService.isAlarmPlaying().subscribe((isPlaying) => {
+            if (isPlaying)
+                this.alarmService.snoozeAlarm();
+            else
+                this.playerMainService.pause();
+        });
     }
 
     /*
@@ -194,10 +217,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     disconnect() {
-        this.playerMainService.disconnect()
+        this.playerMainService.disconnect();
     }
 
     reconnect() {
-        this.playerMainService.ensurePlayerConnected()
+        location.href = "/auth";
     }
 }

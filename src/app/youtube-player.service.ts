@@ -62,7 +62,6 @@ export class YoutubePlayerService {
                     width: 160,
                     events: {
                         onReady: ((ev: YT.PlayerEvent) => {
-                            console.log("Loaded", ev);
                             this.zone.run((() => {
                                 this.ytPlayerLoaded = true;
                                 this.ytPlayer = ev.target;
@@ -88,7 +87,6 @@ export class YoutubePlayerService {
 
     onPlayerStateChange(event: YT.OnStateChangeEvent) {
         const state = event.data;
-        console.log('onPlayerStateChange', event);
         switch (state) {
             case PlayerState.ENDED:
                 this.videoChangeEvent.emit(true);
@@ -165,14 +163,6 @@ export class YoutubePlayerService {
             this.ytPlayer.setVolume(volume);
         }
     }
-
-    getVolume(): number {
-        if (this.ytPlayer && this.ytPlayer.getPlayerState) {
-            return this.ytPlayer.getVolume();
-        }
-        return -1;
-    }
-
     seekTo(position: number) {
         if (this.ytPlayer && this.ytPlayer.getPlayerState) {
             this.ytPlayer.seekTo(position, true);
@@ -181,7 +171,7 @@ export class YoutubePlayerService {
 
     isPlaying() {
         // because YT is not loaded yet 1 is used - YT.PlayerState.PLAYING
-        return this.ytPlayer && this.ytPlayer.getPlayerState && this.ytPlayer.getPlayerState() !== PlayerState.ENDED && this.ytPlayer.getPlayerState() !== PlayerState.PAUSED;
+        return this.ytPlayer && this.ytPlayer.getPlayerState && (this.ytPlayer.getPlayerState() == PlayerState.PLAYING||this.ytPlayer.getPlayerState() == PlayerState.BUFFERING);
     }
 
     getDuration() {

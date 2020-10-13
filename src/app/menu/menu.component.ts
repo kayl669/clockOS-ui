@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, HostListener, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {KeypadService} from "../keypad.service";
+import {PlayerMainService} from "../player-main.service";
 
 @Component({
     selector: 'app-menu',
@@ -8,37 +9,37 @@ import {KeypadService} from "../keypad.service";
     styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit, AfterViewInit {
-    public navigationItems: { icon: string; name: string; routerLink: string }[] = [
+    public navigationItems: { icon: string; name: string; routerLink }[] = [
         {
             name: 'Alarme',
             icon: 'alarm',
-            routerLink: '/alarm',
+            routerLink: ['/alarm'],
         },
         {
             name: 'Météo',
             icon: 'wb_sunny',
-            routerLink: '/weather',
+            routerLink: ['/weather'],
         },
         {
             name: 'Playlists',
             icon: 'queue_music',
-            routerLink: '/playlists',
+            routerLink: ['/playlists'],
         },
         {
             name: 'Radios',
             icon: 'radio',
-            routerLink: '/radios',
+            routerLink: ['/radios'],
         },
         {
             name: 'Configuration Wifi',
             icon: 'settings',
-            routerLink: '/settings',
+            routerLink: ['/settings'],
         },
     ];
     public selected = 0;
     muted: boolean = true;
 
-    constructor(private router: Router, private keypadService: KeypadService) {
+    constructor(private router: Router, private keypadService: KeypadService, private playerMainService: PlayerMainService) {
     }
 
     ngOnInit(): void {
@@ -64,6 +65,21 @@ export class MenuComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit() {
         this.muted = false;
+        if (this.playerMainService.isPlayerConnected()) {
+            this.navigationItems.push({
+                    name: 'Déconnecter de Google',
+                    icon: 'music_off',
+                    routerLink: ['/home', {command:'disconnect'}]
+                },
+            );
+        } else {
+            this.navigationItems.push({
+                    name: 'Connecter à Google',
+                    icon: 'music_note',
+                    routerLink: ['/home', {command:'connect'}],
+                },
+            );
+        }
     }
 
     @HostListener('document:keydown', ['$event'])
@@ -72,7 +88,7 @@ export class MenuComponent implements OnInit, AfterViewInit {
     }
 
     private navigateLeft() {
-        this.navigate('/');
+        this.navigate(['/']);
     }
 
     private navigateRight() {
@@ -96,8 +112,8 @@ export class MenuComponent implements OnInit, AfterViewInit {
         this.router.navigate(['/']);
     }
 
-    navigate(routerLink) {
+    navigate(routerLink: any[]) {
         this.muted = true;
-        this.router.navigate([routerLink]);
+        this.router.navigate(routerLink);
     }
 }

@@ -59,6 +59,18 @@
         "logLevel": "debug",
         "changeOrigin": true
     },
+    "/auth": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
+    "/accessToken": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
     "/socket.io": {
         "target": "http://localhost:4000",
         "secure": false

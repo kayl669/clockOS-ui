@@ -120,8 +120,4 @@ export class AudioService {
     isPlaying() {
         return this.state.playing;
     }
-
-    getVolume() {
-        return this.audioObj.volume * 100;
-    }
 }
