@@ -22,13 +22,14 @@ export class AlarmComponent implements OnInit, AfterViewInit {
     radioCurrentIndex: number;
     public playlists: Array<{ id: number, picture: string, title: string }> = [];
     public radios: Array<{ id: string, picture: string, title: string }> = [];
+    public types: Array<string> = ["radio", "youtube", "mp3"];
+    public selectedType: string = this.types[1];
     selected = 'enableToggle';
     dayOfWeekFocus: number;
     @ViewChild('activate', {static: true}) activate: IgxSwitchComponent;
     @ViewChild('dayOfWeek', {static: true}) dayOfWeekButtonGroup: IgxButtonGroupComponent;
     @ViewChild('timePicker', {static: true}) timePicker: IgxTimePickerComponent;
     @ViewChild('timePickerValue', {static: false}) timePickerValue: IgxInputDirective;
-    @ViewChild('enablePlaylist', {static: true}) enablePlaylist: IgxSwitchComponent;
     @ViewChild("playlistSelect", {static: false}) public playlistSelect: IgxCarouselComponent;
     @ViewChild("radioSelect", {static: false}) public radioSelect: IgxCarouselComponent;
 
@@ -47,6 +48,7 @@ export class AlarmComponent implements OnInit, AfterViewInit {
                 this.volume = result.volume;
                 this.volumeIncreaseDuration = result.volumeIncreaseDuration;
                 this.snoozeAfter = result.snoozeAfter;
+                this.selectedType = result.type;
                 this.playerMainService.searchPlayLists().then(((response) => {
                     this.playlists = [];
                     this.playlistCurrentIndex = 0;
@@ -55,7 +57,6 @@ export class AlarmComponent implements OnInit, AfterViewInit {
                         let item = {id: response[i].id, picture: response[i].details.picture, title: response[i].details.title};
                         this.playlists.push(item);
                         if (result.playlist == response[i].id) {
-                            this.enablePlaylist.checked = true;
                             this.playlistCurrentIndex = i;
                         }
                     }
@@ -68,7 +69,6 @@ export class AlarmComponent implements OnInit, AfterViewInit {
                         let item = {id: data[i].stationuuid, picture: data[i].favicon, title: data[i].name};
                         this.radios.push(item);
                         if (result.stationuuid == data[i].stationuuid) {
-                            this.enablePlaylist.checked = false;
                             this.radioCurrentIndex = i;
                         }
                     }
@@ -107,9 +107,9 @@ export class AlarmComponent implements OnInit, AfterViewInit {
         switch (this.selected) {
             case 'playlist':
             case 'radios':
-                this.selected = 'enablePlaylist';
+                this.selected = 'type';
                 break;
-            case 'enablePlaylist':
+            case 'type':
                 this.selected = 'snoozeAfter';
                 break;
             case 'snoozeAfter':
@@ -138,7 +138,13 @@ export class AlarmComponent implements OnInit, AfterViewInit {
                     this.selected = 'enableToggle';
                 break;
             case 'enableToggle':
-                this.selected = this.enablePlaylist.checked ? 'playlist' : 'radios';
+                if (this.selectedType == this.types[0]) {
+                    this.selected = 'radios';
+                } else if (this.selectedType == this.types[1]) {
+                    this.selected = 'playlist';
+                } else {
+                    this.selected = 'type';
+                }
                 break;
         }
         console.log(this.selected);
@@ -171,10 +177,16 @@ export class AlarmComponent implements OnInit, AfterViewInit {
                 this.selected = 'snoozeAfter';
                 break;
             case 'snoozeAfter':
-                this.selected = 'enablePlaylist';
+                this.selected = 'type';
                 break;
-            case 'enablePlaylist':
-                this.selected = this.enablePlaylist.checked ? 'playlist' : 'radios';
+            case 'type':
+                if (this.selectedType == this.types[0]) {
+                    this.selected = 'radios';
+                } else if (this.selectedType == this.types[1]) {
+                    this.selected = 'playlist';
+                } else {
+                    this.selected = 'enableToggle';
+                }
                 break;
             case 'playlist':
             case 'radios':
@@ -212,8 +224,13 @@ export class AlarmComponent implements OnInit, AfterViewInit {
             case 'snoozeAfter':
                 this.snoozeAfter = this.snoozeAfter + 5;
                 break;
-            case 'enablePlaylist':
-                this.enablePlaylist.checked = !this.enablePlaylist.checked;
+            case 'type':
+                for (let i = 0; i < this.types.length; i++) {
+                    if (this.types[i] == this.selectedType) {
+                        this.selectedType = this.types[(i + 1) % this.types.length];
+                        break;
+                    }
+                }
                 break;
             case 'playlist':
                 this.playlistSelect.get(this.playlistCurrentIndex).active = false;
@@ -257,8 +274,13 @@ export class AlarmComponent implements OnInit, AfterViewInit {
             case 'snoozeAfter':
                 this.snoozeAfter = this.snoozeAfter - 5;
                 break;
-            case 'enablePlaylist':
-                this.enablePlaylist.checked = !this.enablePlaylist.checked;
+            case 'type':
+                for (let i = 0; i < this.types.length; i++) {
+                    if (this.types[i] == this.selectedType) {
+                        this.selectedType = this.types[(this.types.length + i - 1) % this.types.length];
+                        break;
+                    }
+                }
                 break;
             case 'playlist':
                 this.playlistSelect.get(this.playlistCurrentIndex).active = false;
@@ -290,9 +312,10 @@ export class AlarmComponent implements OnInit, AfterViewInit {
             volume: this.volume,
             volumeIncreaseDuration: this.volumeIncreaseDuration,
             snoozeAfter: this.snoozeAfter,
-            type: this.enablePlaylist.checked ? 'Playlist' : 'Radio',
-            playlist: this.enablePlaylist.checked ? this.playlists[this.playlistCurrentIndex].id : 0,
-            stationuuid: this.enablePlaylist.checked ? '' : this.radios[this.radioCurrentIndex].id
+            type: this.selectedType,
+            playlist: this.selectedType == this.types[1] ? this.playlists[this.playlistCurrentIndex].id : 0,
+            stationuuid: this.selectedType == this.types[0] ? this.radios[this.radioCurrentIndex].id : ''
+
         }).then(() => {
             this.muted = true;
             this.router.navigate(['/']);

@@ -1,9 +1,11 @@
-import {Injectable} from '@angular/core';
+import {EventEmitter, Injectable, Output} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 export interface StreamState {
     playing: boolean;
+    duration: number,
+    currentTime: number,
     canplay: boolean;
     error: boolean;
 }
@@ -16,13 +18,17 @@ export class AudioService {
     private stop$ = new Subject();
     private audioObj = new Audio();
     audioEvents = [
-    'error', 'playing', 'pause', 'canplay'
+        'ended', 'error', 'playing', 'pause', 'timeupdate', 'canplay'
     ];
     private state: StreamState = {
         playing: false,
+        duration: undefined,
+        currentTime: undefined,
         canplay: false,
         error: false,
     };
+    @Output() musicChangeEvent: EventEmitter<any> = new EventEmitter(true);
+    @Output() currentPosition: EventEmitter<any> = new EventEmitter(true);
 
     private streamObservable(url) {
         return new Observable(observer => {
@@ -82,11 +88,19 @@ export class AudioService {
         this.stop$.next();
     }
 
+    seekTo(position: number) {
+        this.audioObj.currentTime = position;
+    }
+
     private stateChange: BehaviorSubject<StreamState> = new BehaviorSubject(this.state);
 
     private updateStateEvents(event: Event): void {
         switch (event.type) {
+            case 'ended':
+                this.musicChangeEvent.emit(true);
+                break;
             case 'canplay':
+                this.state.duration = this.audioObj.duration;
                 this.state.canplay = true;
                 break;
             case 'playing':
@@ -94,6 +108,10 @@ export class AudioService {
                 break;
             case 'pause':
                 this.state.playing = false;
+                break;
+            case 'timeupdate':
+                this.state.currentTime = this.audioObj.currentTime;
+                this.currentPosition.emit({position: this.state.currentTime, total: this.state.duration});
                 break;
             case 'error':
                 this.resetState();
@@ -108,6 +126,8 @@ export class AudioService {
     private resetState() {
         this.state = {
             playing: false,
+            duration: undefined,
+            currentTime: undefined,
             canplay: false,
             error: false
         };
@@ -119,5 +139,12 @@ export class AudioService {
 
     isPlaying() {
         return this.state.playing;
+    }
+
+    getDuration() {
+        if (this.state.playing) {
+            return this.state.duration;
+        }
+        return -1;
     }
 }

@@ -47,11 +47,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
                 return (this.weatherService.updateCurrentWeather(data.city));
             });
             this.updateAlarm();
-            this.playerMainService.ensurePlayerConnected().then((() => {
-                if (!this.playerMainService.isPlayerConnected()) {
-                    this.reconnect();
-                }
-            }).bind(this));
+            this.playerMainService.ensurePlayerConnected();
             }, 60000);
         this.tick();
         this.keypadService.rightEvent.subscribe((() => {
@@ -83,6 +79,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
                 this.reconnect();
             } else if (params['command'] == 'disconnect') {
                 this.disconnect();
+            } else if (params['command'] == 'playlistMp3') {
+                this.playerMainService.playlistMp3();
             }
         });
         this.muted = false;
@@ -120,9 +118,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
         if (this.playerMainService.isPlaying()) {
             this.playerMainService.nextTrack();
         } else {
-            this.muted = true;
-            this.router.navigate(['/menu']);
+            this.menu();
         }
+    }
+
+    public menu() {
+        this.muted = true;
+        this.router.navigate(['/menu']);
     }
 
     private navigateUp() {

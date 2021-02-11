@@ -49,11 +49,13 @@
         <section [ngStyle]="{'background-color':selected ==='snoozeAfter' ? '#1b70cb' : '' }">
             <igx-slider [minValue]="1" [maxValue]="120" [step]="5" [continuous]=true [(ngModel)]="snoozeAfter"></igx-slider>
         </section>
-        <section [ngStyle]="{'background-color':selected ==='enablePlaylist' ? '#1b70cb' : '' }">
-            <igx-switch #enablePlaylist>{{enablePlaylist.checked ? 'Playlist' : 'Radio'}}</igx-switch>
+        <section [ngStyle]="{'background-color':selected ==='type' ? '#1b70cb' : '' }">
+            <igx-radio-group>
+                <igx-radio *ngFor="let type of types" name="type" [value]="type" [(ngModel)]="selectedType">{{type}}&nbsp;</igx-radio>
+            </igx-radio-group>
         </section>
         <section
-                [ngStyle]="{'background-color':selected ==='playlist' ? '#1b70cb' : '' ,'visibility': (enablePlaylist.checked ?'visible':'hidden'),'display': (enablePlaylist.checked ?'block':'none')}">
+                [ngStyle]="{'background-color':selected ==='playlist' ? '#1b70cb' : '' ,'visibility': (this.selectedType==this.types[1] ?'visible':'hidden'),'display': (this.selectedType==this.types[1] ?'block':'none')}">
             <igx-carousel #playlistSelect animationType="slide" [navigation]="false" (onSlideAdded)="onPlaylistAdded()">
                 <ng-template igxCarouselIndicator></ng-template>
                 <igx-slide *ngFor="let item of playlists">
@@ -67,7 +69,7 @@
             </igx-carousel>
         </section>
         <section
-                [ngStyle]="{'background-color':selected ==='radios' ? '#1b70cb' : '' ,'visibility': (!enablePlaylist.checked ?'visible':'hidden'),'display': (!enablePlaylist.checked ?'block':'none')}">
+                [ngStyle]="{'background-color':selected ==='radios' ? '#1b70cb' : '' ,'visibility': (this.selectedType==this.types[0] ?'visible':'hidden'),'display': (this.selectedType==this.types[0] ?'block':'none')}">
             <igx-carousel #radioSelect animationType="slide" [navigation]="false" (onSlideAdded)="onRadioAdded()">
                 <ng-template igxCarouselIndicator></ng-template>
                 <igx-slide *ngFor="let item of radios">

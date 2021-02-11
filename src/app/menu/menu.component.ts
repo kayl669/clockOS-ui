@@ -26,6 +26,11 @@ export class MenuComponent implements OnInit, AfterViewInit {
             routerLink: ['/playlists'],
         },
         {
+            name: 'Playlist MP3',
+            icon: 'queue_music',
+            routerLink: ['/home', {command: 'playlistMp3'}]
+        },
+        {
             name: 'Radios',
             icon: 'radio',
             routerLink: ['/radios'],

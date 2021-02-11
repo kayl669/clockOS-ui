@@ -2,6 +2,7 @@ import {AfterViewInit, Component, Renderer2} from '@angular/core';
 import {PlayerMainService} from "../player-main.service";
 import {YoutubePlayerService} from "../youtube-player.service";
 import {ScriptService} from "ngx-script-loader";
+import {AudioService} from "../audio.service";
 
 
 @Component({
@@ -15,7 +16,7 @@ export class PlayerComponent implements AfterViewInit {
     public shouldHideControl = false;
     timeout;
 
-    constructor(private scriptService: ScriptService, public playerMainService: PlayerMainService, private youtubePlayerService: YoutubePlayerService, private renderer: Renderer2) {
+    constructor(private scriptService: ScriptService, public playerMainService: PlayerMainService, private audioService: AudioService, private youtubePlayerService: YoutubePlayerService, private renderer: Renderer2) {
         this.playerMainService.positionChangedEvent.subscribe(((position) => {
             this.updatePosition(position);
         }).bind(this));
@@ -48,8 +49,15 @@ export class PlayerComponent implements AfterViewInit {
     }
 
     public seekTo(event) {
-        let position = event.value * this.youtubePlayerService.getDuration() / 100;
-        console.log(position, this.youtubePlayerService.getDuration());
-        this.playerMainService.seek(position);
+        if (this.youtubePlayerService.isPlaying()) {
+            let position = event.value * this.youtubePlayerService.getDuration() / 100;
+            console.log(position, this.youtubePlayerService.getDuration());
+            this.playerMainService.seek(position);
+        } else if (this.audioService.isPlaying()) {
+            let position = event.value * this.audioService.getDuration() / 100;
+            console.log(position, this.audioService.getDuration());
+            this.playerMainService.seek(position);
+
+        }
     }
 }

@@ -1,12 +1,12 @@
-<div [ngStyle]="this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause'?{'display':'block', 'visibility':'visible', 'position':'absolute'} : {'display': 'none','visibility':'hidden'}">
+<div [ngStyle]="(this.playerMainService.type == 'youtube' && (this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause'))?{'display':'block', 'visibility':'visible', 'position':'absolute'} : {'display': 'none','visibility':'hidden'}">
     <div [ngClass]="this.fullscreenActive ? 'yt-player-fullscreen' : 'yt-player-normal'">
         <div id="yt-player"></div>
     </div>
     <div id="yt-mask" [ngClass]="this.fullscreenActive ? 'yt-mask-fullscreen' : 'yt-mask-normal'" (click)="this.toggleFullscreen()"></div>
 </div>
 <div class="display-card" [ngStyle]="{'visibility':!this.shouldHideControl ? 'visible' : 'hidden'}">
-<igx-card type="outlined" class="myCard"
-              [ngStyle]="{'visibility':!this.shouldHideControl&&(this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause') ? 'visible' : 'hidden'}">
+    <igx-card type="outlined" class="myCard"
+              [ngStyle]="{'visibility':((this.playerMainService.type == 'mp3' || (this.playerMainService.type == 'youtube' && !this.shouldHideControl)) && (this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause')) ? 'visible' : 'hidden'}">
         <igx-card-actions [reverse]="true">
             <button igxButton="icon" (click)="this.playerMainService.play()">
                 <igx-icon>play_arrow</igx-icon>
@@ -33,19 +33,19 @@
     </igx-card>
     <igx-card type="outlined" class="myCard">
         <igx-card-header
-                [ngStyle]="(this.playerMainService.musicStatus == 'radio') ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}">
+                [ngStyle]="(this.playerMainService.type == 'radio' && this.playerMainService.musicStatus == 'playing') ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}">
             <igx-avatar width="160px" height="160px" [src]="this.playerMainService.favicon"></igx-avatar>
             <h2 igxCardHeaderTitle>{{this.playerMainService.title}}</h2>
         </igx-card-header>
         <igx-card-header
-                [ngStyle]="(this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause') ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}">
+                [ngStyle]="((this.playerMainService.type === 'youtube' || this.playerMainService.type === 'mp3') && (this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause')) ? {'display':'block', 'visibility':'visible'} : {'display': 'none','visibility':'hidden'}">
             <h2 igxCardHeaderTitle>{{this.playerMainService.title}}</h2>
         </igx-card-header>
     </igx-card>
     <igx-card type="outlined" class="myCard">
         <igx-card-header>
             <igx-slider
-                    [ngStyle]="{'display':(this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause') ? 'block' : 'none'}"
+                    [ngStyle]="{'display':((this.playerMainService.type == 'youtube' || this.playerMainService.type == 'mp3') && (this.playerMainService.musicStatus == 'playing' || this.playerMainService.musicStatus == 'pause')) ? 'block' : 'none'}"
                     igxCardHeaderTitle id="position" [minValue]="0" [maxValue]="100" [continuous]=true [(ngModel)]="position"
                     (onValueChange)="this.seekTo($event)"
                     class="slider"></igx-slider>

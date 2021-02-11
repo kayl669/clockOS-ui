@@ -58,7 +58,7 @@
         </svg>
         <div class="overlay">
             <div class="display-menu">
-                <igx-icon (click)="this.navigateRight();">list</igx-icon>
+                <igx-icon (click)="this.menu();">list</igx-icon>
             </div>
             <div class="display-music">
                 <igx-icon *ngIf="this.playerMainService.isPlayerConnected()" (click)="this.disconnect()">music_note</igx-icon>

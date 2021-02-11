@@ -163,6 +163,7 @@ export class YoutubePlayerService {
             this.ytPlayer.setVolume(volume);
         }
     }
+
     seekTo(position: number) {
         if (this.ytPlayer && this.ytPlayer.getPlayerState) {
             this.ytPlayer.seekTo(position, true);

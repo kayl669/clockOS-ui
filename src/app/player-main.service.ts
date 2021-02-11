@@ -13,7 +13,7 @@ export class PlayerMainService {
     max_results = 50;
     connected: boolean;
     apiLoaded: boolean;
-    accessToken: string;
+    accessToken: string = "";
     server;
     socket;
     queue = [];
@@ -21,12 +21,12 @@ export class PlayerMainService {
     currentTrack;
     lastPosition = 0; // last position of the track
     musicStatus = 'stop';
+    type = 'youtube';
     title: string = '';
     favicon: string = '';
     currentVolume = -1;
 
     public nextToken: string;
-    public lastQuery: string;
 
     @Output() positionChangedEvent: EventEmitter<any> = new EventEmitter(true);
 
@@ -82,7 +82,8 @@ export class PlayerMainService {
     }
 
     playRadio(stationuuid: string) {
-        this.musicStatus = 'radio';
+        this.musicStatus = 'playing';
+        this.type = 'radio';
         this.youtubePlayerService.stopPlayingVideo();
         console.log('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid);
         this.httpClient.get<IRadio>('https://de1.api.radio-browser.info/json/stations/byuuid/' + stationuuid).subscribe(data => {
@@ -94,11 +95,13 @@ export class PlayerMainService {
             this.title = data[0].name;
             this.favicon = data[0].favicon;
             this.lastPosition = 0;
+            this.musicStatus = 'playing';
         });
     }
 
     playMusic() {
-        if (this.musicStatus == 'stop' || this.musicStatus == 'radio') {
+        this.type = 'youtube';
+        if (this.musicStatus == 'stop') {
             if (this.queue.length > 0) {
                 // If no track loaded, play the first in the queue
                 let track = this.queue[0];
@@ -109,6 +112,24 @@ export class PlayerMainService {
         } else {
             this.youtubePlayerService.playPausedVideo();
         }
+        this.musicStatus = 'playing';
+    }
+
+    playMp3() {
+        this.type = 'mp3';
+        if (this.musicStatus == 'stop') {
+            if (this.queue.length > 0) {
+                // If no track loaded, play the first in the queue
+                let track = this.queue[0];
+                console.log(track);
+                this.audioService.playStream(track.url);
+                this.title = track.title;
+                this.queue.splice(0, 1);
+            }
+        } else {
+            this.audioService.pause();
+        }
+        this.musicStatus = 'playing';
     }
 
     isPlaying() {
@@ -120,10 +141,12 @@ export class PlayerMainService {
     }
 
     private playing() {
-        if (this.stationuuid !== '') {
+        if (this.type == 'radio') {
             this.playRadio(this.stationuuid);
-        } else {
+        } else if (this.type == 'youtube') {
             this.playMusic();
+        } else if (this.type == 'mp3') {
+            this.playMp3();
         }
     }
 
@@ -157,12 +180,12 @@ export class PlayerMainService {
     }
 
     prevTrack() {
-        if (this.musicStatus != 'radio')
+        if (this.type != 'radio')
             this.socket.emit('prevTrack');
     }
 
     nextTrack() {
-        if (this.musicStatus != 'radio')
+        if (this.type != 'radio')
             this.socket.emit('nextTrack');
     }
 
@@ -208,8 +231,35 @@ export class PlayerMainService {
                 }
                 this.title = shuffledTracks[0].title;
                 console.log("Sending tracks", shuffledTracks);
-                this.socket.emit('tracks', shuffledTracks);
-            });
+                this.socket.emit('sendTracks', shuffledTracks);
+            }, () => this.playlistMp3());
+        });
+    }
+
+    playlistMp3() {
+        var tracks = [];
+        var shuffledTracks = [];
+        return this.httpClient.get('/music', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).toPromise().then(response => {
+            var resp = [];
+            // @ts-ignore
+            resp = response;
+            for (let i = 0; i < resp.length; i++) {
+                const item = response[i];
+                tracks.push({
+                    url: item,
+                    title: item.substr(item.lastIndexOf('/') + 1, item.lastIndexOf('.') - item.lastIndexOf('/') - 1)
+                });
+            }
+            while (tracks.length > 0) {
+                const j = Math.floor(Math.random() * (tracks.length - 1));
+                shuffledTracks.push(tracks.splice(j, 1)[0]);
+            }
+            console.log('res', shuffledTracks);
+            this.socket.emit('sendMp3tracks', shuffledTracks);
         });
     }
 
@@ -235,6 +285,10 @@ export class PlayerMainService {
             this.playList(playlist.playlist);
         }).bind(this));
 
+        this.socket.on('playlistMp3', (() => {
+            this.playlistMp3();
+        }).bind(this));
+
         this.socket.on('radio', ((radio) => {
             console.log("Let's play ", radio.stationuuid);
             this.playRadio(radio.stationuuid);
@@ -246,12 +300,12 @@ export class PlayerMainService {
 
         this.socket.on('pause', (() => {
             this.pausing();
-            this.socket.emit('musicStatus', 'pause');
+            this.socket.emit('musicStatus', {musicstatus: 'pause', type: this.type});
         }).bind(this));
 
         this.socket.on('stop', (() => {
             this.stopping();
-            this.socket.emit('musicStatus', 'stop');
+            this.socket.emit('musicStatus', {musicstatus: 'stop', type: this.type});
         }).bind(this));
 
         this.socket.on('volume', ((vol) => {
@@ -268,6 +322,8 @@ export class PlayerMainService {
             console.log('seek', position);
             if (this.youtubePlayerService.isPlaying()) {
                 this.youtubePlayerService.seekTo(position);
+            } else if (this.audioService.isPlaying()) {
+                this.audioService.seekTo(position);
             }
         }).bind(this));
 
@@ -275,16 +331,24 @@ export class PlayerMainService {
             console.log('clientInfos', data);
             this.queue = data.queue;
             this.musicStatus = data.musicStatus;
+            this.type = data.type;
             this.stationuuid = data.stationuuid;
-            if (data.musicStatus == 'radio') {
+            if (data.type == 'radio' && data.musicStatus === 'playing') {
                 this.playRadio(data.stationuuid);
             }
-            if ((data.musicStatus === 'playing' || data.musicStatus === 'pause') && data.queue[0]) {
+            if (data.type !== 'radio' && (data.musicStatus === 'playing' || data.musicStatus === 'pause') && data.queue[0]) {
                 this.stopping();
-                this.playMusic();
-                this.youtubePlayerService.seekTo(data.musicPosition);
-                if (data.musicStatus === 'pause')
-                    this.youtubePlayerService.pausePlayingVideo();
+                if (data.type == 'youtube') {
+                    this.playMusic();
+                    this.youtubePlayerService.seekTo(data.musicPosition);
+                    if (data.musicStatus === 'pause')
+                        this.youtubePlayerService.pausePlayingVideo();
+                } else if (data.type == 'mp3') {
+                    this.playMp3();
+                    this.audioService.seekTo(data.musicPosition);
+                    if (data.musicStatus === 'pause')
+                        this.youtubePlayerService.pausePlayingVideo();
+                }
             }
         }).bind(this));
 
@@ -292,36 +356,62 @@ export class PlayerMainService {
             console.log('tracks', data);
             this.queue = data.queue;
             this.musicStatus = data.musicStatus;
+            this.type = data.type;
             this.stationuuid = data.stationuuid;
             this.stopping();
             this.playMusic();
+        }).bind(this));
+
+        this.socket.on('mp3tracks', ((data) => {
+            console.log('mp3tracks', data);
+            this.queue = data.queue;
+            this.musicStatus = data.musicStatus;
+            this.type = data.type;
+            this.stationuuid = data.stationuuid;
+            this.stopping();
+            this.playMp3();
         }).bind(this));
 
         this.socket.on('prevTrack', ((data) => {
             console.log('prevTrack', data);
             this.queue = data.queue;
             this.musicStatus = data.musicStatus;
+            this.type = data.type;
             this.stationuuid = data.stationuuid;
             this.stopping();
-            this.playMusic();
+            if (this.type == 'youtube') {
+                this.playMusic();
+            } else if (this.type == 'mp3') {
+                this.playMp3();
+            }
         }).bind(this));
 
         this.socket.on('nextTrack', ((data) => {
             console.log('nextTrack', data);
             this.queue = data.queue;
             this.musicStatus = data.musicStatus;
+            this.type = data.type;
             this.stationuuid = data.stationuuid;
             this.stopping();
-            this.playMusic();
+            if (this.type == 'youtube') {
+                this.playMusic();
+            } else if (this.type == 'mp3') {
+                this.playMp3();
+            }
         }).bind(this));
 
         this.socket.on('end', ((data) => {
-            console.log('end', data);
+            console.log("end", data);
             this.queue = data.queue;
             this.musicStatus = data.musicStatus;
+            this.type = data.type;
             this.stationuuid = data.stationuuid;
             this.stopping();
-            this.playMusic();
+            if (this.type == 'youtube') {
+                this.playMusic();
+            } else if (this.type == 'mp3') {
+                this.playMp3();
+            }
         }).bind(this));
 
         this.socket.on('musicPosition', (position) => {
@@ -330,6 +420,20 @@ export class PlayerMainService {
     }
 
     playerEvent() {
+        this.audioService.currentPosition.subscribe(((event) => {
+            let position = event.position;
+            let total = event.total;
+            this.socket.emit('musicPosition', position / total * 100); // From 0 to 100
+            this.lastPosition = position;
+        }).bind(this));
+
+        this.audioService.musicChangeEvent.subscribe(((event) => {
+            console.log("musicChangeEvent", this.currentTrack, event);
+            this.socket.emit('end', this.currentTrack);
+            this.socket.emit('musicStatus', {musicstatus: 'stop', type: this.type});
+            this.musicStatus = 'stop';
+        }).bind(this));
+
         this.youtubePlayerService.currentPosition.subscribe(((event) => {
             let position = event.position;
             let total = event.total;
@@ -339,10 +443,10 @@ export class PlayerMainService {
 
         this.youtubePlayerService.playPauseEvent.subscribe(((event) => {
             if (event == 'play') {
-                this.socket.emit('musicStatus', 'playing');
+                this.socket.emit('musicStatus', {musicstatus: 'playing', type: this.type});
                 this.musicStatus = 'playing';
             } else if (event == 'pause') {
-                this.socket.emit('musicStatus', 'pause');
+                this.socket.emit('musicStatus', {musicstatus: 'pause', type: this.type});
                 this.musicStatus = 'pause';
             }
         }).bind(this));
@@ -350,7 +454,7 @@ export class PlayerMainService {
         this.youtubePlayerService.videoChangeEvent.subscribe(((event) => {
             console.log("videoChangeEvent", this.currentTrack, event);
             this.socket.emit('end', this.currentTrack);
-            this.socket.emit('musicStatus', 'stop');
+            this.socket.emit('musicStatus', {musicstatus: 'stop', type: this.type});
             this.musicStatus = 'stop';
         }).bind(this));
 

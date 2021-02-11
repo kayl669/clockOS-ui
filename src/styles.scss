@@ -36,6 +36,13 @@ $track-on-color: #1bbccb));
         $cell-active-border-color: transparentize(#1bbccb, 0.9),
 ));
 
+@include igx-radio(igx-radio-theme(
+        $schema: $dark-schema,
+        $fill-color: transparentize(#1bbccb, 0.1),
+        $fill-hover-border-color: transparentize(#1bbccb, 0.1),
+        $empty-color: #e9fafc,
+));
+
 /* app css stylesheet */
 
 /* Some Styles Reset */

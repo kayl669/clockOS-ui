@@ -5,6 +5,12 @@
         "logLevel": "debug",
         "changeOrigin": true
     },
+    "/music": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true
+    },
     "/remote": {
         "target": "http://localhost:4000",
         "secure": false,
